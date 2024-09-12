@@ -22,11 +22,12 @@ struct CsvReader:
 
     fn __init__(
         inout self,
-        owned in_str: String,
+        # owned in_csv: Path,
+        owned in_csv: String,
         owned delimiter: String = ",",
         owned quotation_mark: String = '"',
     ):
-        self.raw = in_str
+        self.raw = in_csv
         self.length = self.raw.__len__()
         self.delimiter = delimiter
         self.QM = quotation_mark
@@ -39,7 +40,7 @@ struct CsvReader:
         self.headers = List[String]()
         self.create_reader()
 
-    @always_inline
+
     fn create_reader(inout self):
         # var row_start: Int = 0
         var col: Int = 0
@@ -86,19 +87,3 @@ struct CsvReader:
         # -------------
 
     # ---------------------
-
-
-def main():
-    try: 
-        # in_csv = Path(argv()[0])
-        in_csv = Path(argv()[1])
-        # print(in_csv)
-
-        with open(in_csv, "r") as fi:
-            var text = fi.read()
-            var rd = CsvReader(text)
-            # print(rd.col_count)
-            for x in range(len(rd.elements)):
-                print(rd.elements[x])
-    except Exception:
-        print("error: ", Exception)
