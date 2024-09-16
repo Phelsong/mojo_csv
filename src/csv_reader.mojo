@@ -93,6 +93,9 @@ struct CsvReader[]:
                 if pos + 1 < self.length:
                     self.row_count += 1
                     col_start = pos + 1
+            
+            elif pos == self.length:
+                self.elements.append(self.raw[col_start:pos])
             # -------
         # -------------
 
