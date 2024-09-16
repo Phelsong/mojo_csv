@@ -6,7 +6,7 @@ from sys import argv
 
 
 @value
-struct CsvReader:
+struct CsvReader[]:
     # var data: Dict[String,String]
     var headers: List[String]
     var elements: List[String]
@@ -46,11 +46,15 @@ struct CsvReader:
         var col: Int = 0
         var col_start: Int = 0
         var in_quotes: Bool = False
+        var skip:Bool = False
         for pos in range(self.length):
             var char: String = self.raw[pos]
             # print(pos, "char: ", char)
             # --------
 
+            if skip:
+                skip=False
+                continue
             if in_quotes:
                 if char != self.QM:
                     continue
@@ -64,12 +68,19 @@ struct CsvReader:
             # --------
 
             if char == self.delimiter:
+                
                 self.elements.append(self.raw[col_start:pos])
-
                 col_start = pos + 1
-
+                
                 if self.row_count == 0:
                     self.col_count += 1
+
+                if pos + 1 < self.length:
+                    if self.raw[pos+1] == self.CR or self.raw[pos+1] == self.LFCR:
+                        skip=True
+                        col_start = pos + 2
+                else:
+                    break
 
             # --------
             # case end of row
@@ -82,7 +93,6 @@ struct CsvReader:
                 if pos + 1 < self.length:
                     self.row_count += 1
                     col_start = pos + 1
-
             # -------
         # -------------
 
