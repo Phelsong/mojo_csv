@@ -1,6 +1,6 @@
 from pathlib import Path
 from testing import assert_true
-from .csv_reader import CsvReader
+from src.csv_reader import CsvReader
 
 
 fn open_csv(in_csv: Path, delimiter: String = ",", quotation_mark: String = '"') -> CsvReader :
