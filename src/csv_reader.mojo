@@ -4,8 +4,6 @@ from sys import argv
 
 # item1,"ite,m2",item3
 
-
-@value
 struct CsvReader[]:
     # var data: Dict[String,String]
     var headers: List[String]
@@ -21,7 +19,7 @@ struct CsvReader[]:
     var col_count: Int
 
     fn __init__(
-        inout self,
+        out self,
         # owned in_csv: Path,
         owned in_csv: String,
         owned delimiter: String = ",",
@@ -49,7 +47,6 @@ struct CsvReader[]:
         var skip:Bool = False
         for pos in range(self.length):
             var char: String = self.raw[pos]
-            # print(pos, "char: ", char)
             # --------
 
             if skip:

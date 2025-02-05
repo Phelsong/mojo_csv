@@ -5,9 +5,26 @@ from sys import argv
 from src.csv_reader import CsvReader
 # from src.open_csv import open_csv
 
-def main():
+from mojo_csv import CsvReader as CsvReaderD
+
+fn dist_check(read test_csv: Path):
+    print("----------")
     try:
-        in_csv = Path(argv()[1])
+        # print(in_csv)
+        with open(test_csv, "r") as fi:
+            var rd = CsvReaderD(fi.read())
+            # print(rd.col_count)
+            for x in range(len(rd.elements)):
+                print(rd.elements[x])
+        # -------------
+    except Exception:
+        print("error: ", Exception)
+
+
+
+fn main():
+    try:
+        var in_csv: Path = Path(argv()[1])
         # print(in_csv)
         with open(in_csv, "r") as fi:
             var rd = CsvReader(fi.read())
@@ -19,7 +36,7 @@ def main():
         # print(rd.col_count)
         # for x in range(len(rd.elements)):
         #     print(rd.elements[x])
-
+        dist_check(in_csv)
 
     except Exception:
         print("error: ", Exception)
