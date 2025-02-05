@@ -1,13 +1,13 @@
 # Mojo Csv
+
 My reference implementation for csv tools in mojo
 
 ### usage
-```
+
+```mojo 
 from mojo_csv import CsvReader
 
-with open(in_csv, "r") as fi:
+with open(csv_path, "r") as fi:
     var rd = CsvReader(fi.read())
 ```
-
-
 
