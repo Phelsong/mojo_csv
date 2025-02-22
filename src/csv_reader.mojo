@@ -18,7 +18,6 @@ struct CsvReader[]:
     var row_count: Int
     var col_count: Int
 
-
     fn __init__(
         out self,
         owned in_csv: Path,
@@ -40,18 +39,17 @@ struct CsvReader[]:
         self.length = self.raw.__len__()
         self._create_reader()
 
-
     fn _create_reader(mut self):
         var col: Int = 0
         var col_start: Int = 0
         var in_quotes: Bool = False
-        var skip:Bool = False
+        var skip: Bool = False
         for pos in range(self.length):
             var char: String = self.raw[pos]
             # --------
 
             if skip:
-                skip=False
+                skip = False
                 continue
             if in_quotes:
                 if char != self.QM:
@@ -66,7 +64,6 @@ struct CsvReader[]:
             # --------
 
             if char == self.delimiter:
-
                 self.elements.append(self.raw[col_start:pos])
                 col_start = pos + 1
 
@@ -74,8 +71,11 @@ struct CsvReader[]:
                     self.col_count += 1
 
                 if pos + 1 < self.length:
-                    if self.raw[pos+1] == self.CR or self.raw[pos+1] == self.LFCR:
-                        skip=True
+                    if (
+                        self.raw[pos + 1] == self.CR
+                        or self.raw[pos + 1] == self.LFCR
+                    ):
+                        skip = True
                         col_start = pos + 2
                 else:
                     break
@@ -96,6 +96,7 @@ struct CsvReader[]:
                 self.elements.append(self.raw[col_start:pos])
             # -------
         # -------------
+
     fn _open(mut self, in_csv: Path):
         try:
             assert_true(in_csv.exists())

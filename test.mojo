@@ -5,7 +5,18 @@ from testing import assert_true
 
 from src.csv_reader import CsvReader
 
-var VALID = List[String]("item1", "item2", '"ite,em3"',"pic"," pi c","pic","r_i_1","r_i_2","r_i_3")
+var VALID = List[String](
+    "item1",
+    "item2",
+    '"ite,em3"',
+    "pic",
+    " pi c",
+    "pic",
+    "r_i_1",
+    "r_i_2",
+    "r_i_3",
+)
+
 
 fn main() -> None:
     var in_csv: Path = Path(argv()[1])
@@ -16,7 +27,12 @@ fn main() -> None:
     try:
         for x in range(len(rd.elements)):
             print(rd.elements[x])
-            assert_true(rd.elements[x] == VALID[x], String("[{0}] != expected [{1}] at index {2}").format(rd.elements[x], VALID[x], x))
+            assert_true(
+                rd.elements[x] == VALID[x],
+                String("[{0}] != expected [{1}] at index {2}").format(
+                    rd.elements[x], VALID[x], x
+                ),
+            )
         assert_true(len(rd.elements) == 9)
     except AssertionError:
         print(AssertionError)
