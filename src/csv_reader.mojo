@@ -19,7 +19,7 @@ struct CsvReader[]:
     var col_count: Int
 
     fn __init__(
-        out self,
+        outself,
         owned in_csv: Path,
         owned delimiter: String = ",",
         owned quotation_mark: String = '"',
