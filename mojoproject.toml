@@ -4,11 +4,12 @@ channels = ["conda-forge", "https://conda.modular.com/max"]
 description = "csv parser in mojo"
 name = "mojo_csv"
 platforms = ["linux-64"]
-version = "0.1.1"
+version = "1.1.0"
 
 [tasks]
 test = "mojo test.mojo test.csv"
-build_package = "mojo package src -o dist/mojo_csv.mojopkg"
+pack = "mojo package src -o dist/mojo_csv.mojopkg;cd dist; sha256sum mojo_csv.mojopkg > sha256sum.mojo_csv.mojopkg.txt"
+test_pack = "mojo test_pack.mojo test.csv"
 
 [dependencies]
-max = ">=24.6.0,<25"
+max = ">=25.1.0,<26"

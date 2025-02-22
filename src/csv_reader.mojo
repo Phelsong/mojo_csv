@@ -1,8 +1,8 @@
 from collections import Dict, List
 from pathlib import Path, cwd
-from sys import argv
+from sys import argv, exit
+from testing import assert_true
 
-# item1,"ite,m2",item3
 
 struct CsvReader[]:
     # var data: Dict[String,String]
@@ -18,17 +18,17 @@ struct CsvReader[]:
     var row_count: Int
     var col_count: Int
 
+
     fn __init__(
         out self,
-        # owned in_csv: Path,
-        owned in_csv: String,
+        owned in_csv: Path,
         owned delimiter: String = ",",
         owned quotation_mark: String = '"',
     ):
-        self.raw = in_csv
-        self.length = self.raw.__len__()
-        self.delimiter = delimiter
+        self.raw = ""
+        self.length = 0
         self.QM = quotation_mark
+        self.delimiter = delimiter
         self.escape = "\\"
         self.CR = "\n"
         self.LFCR = "\r\n"
@@ -36,11 +36,12 @@ struct CsvReader[]:
         self.col_count = 0
         self.elements = List[String]()
         self.headers = List[String]()
-        self.create_reader()
+        self._open(in_csv)
+        self.length = self.raw.__len__()
+        self._create_reader()
 
 
-    fn create_reader(inout self):
-        # var row_start: Int = 0
+    fn _create_reader(mut self):
         var col: Int = 0
         var col_start: Int = 0
         var in_quotes: Bool = False
@@ -65,10 +66,10 @@ struct CsvReader[]:
             # --------
 
             if char == self.delimiter:
-                
+
                 self.elements.append(self.raw[col_start:pos])
                 col_start = pos + 1
-                
+
                 if self.row_count == 0:
                     self.col_count += 1
 
@@ -90,10 +91,26 @@ struct CsvReader[]:
                 if pos + 1 < self.length:
                     self.row_count += 1
                     col_start = pos + 1
-            
+
             elif pos == self.length:
                 self.elements.append(self.raw[col_start:pos])
             # -------
         # -------------
+    fn _open(mut self, in_csv: Path):
+        try:
+            assert_true(in_csv.exists())
+            self.raw = in_csv.read_text()
+            assert_true(self.raw != "")
+        except AssertionError:
+            print("Error opening file:", in_csv)
+            exit()
 
+    # fn __copyinit__(mut self, existing: _Self) -> CsvReader:
+    #     self.raw = existing.raw
+    #     self.delimiter = existing.delimiter
+    #     self.QM = existing.QM
+    #     self.elements = existing.elements
+    #     self.col_count = existing.col_count
+    #     self.row_count = existing.row_count
+    #     return self
     # ---------------------

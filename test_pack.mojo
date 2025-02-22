@@ -3,7 +3,7 @@ from pathlib import Path, cwd
 from sys import argv, exit
 from testing import assert_true
 
-from src.csv_reader import CsvReader
+from mojo_csv import CsvReader
 
 var VALID = List[String]("item1", "item2", '"ite,em3"',"pic"," pi c","pic","r_i_1","r_i_2","r_i_3")
 
@@ -23,6 +23,8 @@ fn main() -> None:
         exit()
     print("----------")
     print("parse successful")
+
+
 
 
 # columns: 3
