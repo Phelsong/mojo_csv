@@ -28,16 +28,21 @@ from pathlib import Path
 fn main():
     var csv_path = Path("path/to/csv/file.csv")
     var reader = CsvReader(csv_path, delimiter="|", quotation_mark='*')
-    for i in range(len(reader.elements)):
+    for i in range(len(reader.elements):
         print(reader.elements[i])
 ```
 
 ### Attributes
 
 ```mojo
-reader.raw
-reader.headers
-reader.row_count
-reader.column_count
-reader.length
+reader.raw : String # raw csv string
+reader.raw_length : Int # total number of Chars
+reader.headers : List[String] # first row of csv file
+reader.row_count : Int  # total number of rows T->B
+reader.column_count : Int # total number of columns L->R
+reader.elements : List[String] # all delimited elements
+reader.length : Int # total number of elements
 ```
+
+##### Indexing
+
