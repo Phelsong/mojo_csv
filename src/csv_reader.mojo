@@ -5,6 +5,7 @@ from testing import assert_true
 
 # https://www.rfc-editor.org/rfc/rfc4180
 #
+@value
 struct CsvReader:
     # var data: Dict[String,String]
     var headers: List[String]
@@ -119,6 +120,13 @@ struct CsvReader:
         if index < 0 or index >= self.row_count:
             raise Error("Index out of range")
         return self.elements[index]
+
+
+    fn __len__(self) -> Int:
+        return self.length
+
+    # fn __iter__(self) -> Iterator[String]:
+    #     return self.elements.__iter__()
 
     # fn __repr__(self) -> String:
     #     var out = String("[")

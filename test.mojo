@@ -24,7 +24,7 @@ fn main() raises:
     print("----------")
     try:
         assert_true(rd.col_count == 3)
-        for x in range(len(rd.elements)):
+        for x in range(len(rd)):
             print(rd.elements[x])
             assert_true(
                 rd.elements[x] == VALID[x],
@@ -33,27 +33,13 @@ fn main() raises:
                 ),
             )
         print("----------")
-        # print(rd)
         print("columns:", rd.col_count, "of 3")
         print("rows:", rd.row_count, "of 3")
         assert_true(rd.row_count == 3)
-        print("elements:", rd.length, "of 9")
+        print("elements:", rd.__len__(), "of 9")
         assert_true(len(rd.elements) == 9)
     except AssertionError:
         print(AssertionError)
         raise AssertionError
     print("----------")
     print("parse successful")
-
-
-# columns: 3
-# ----------
-# item1
-# item2
-# "ite,em3"
-# pic
-#  pi c
-# pic
-# r_i_1
-# r_i_2
-# r_i_3

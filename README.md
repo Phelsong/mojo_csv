@@ -15,8 +15,8 @@ from pathlib import Path
 fn main():
     var csv_path = Path("path/to/csv/file.csv")
     var reader = CsvReader(csv_path)
-    for i in range(len(reader.elements)):
-        print(reader.elements[i])
+    for i in range(len(reader)):
+        print(reader[i])
 ```
 
 ##### Optional Usage
@@ -28,8 +28,8 @@ from pathlib import Path
 fn main():
     var csv_path = Path("path/to/csv/file.csv")
     var reader = CsvReader(csv_path, delimiter="|", quotation_mark='*')
-    for i in range(len(reader.elements):
-        print(reader.elements[i])
+    for i in range(len(reader)):
+        print(reader[i])
 ```
 
 ### Attributes
@@ -46,3 +46,8 @@ reader.length : Int # total number of elements
 
 ##### Indexing
 
+currently the array is only 1D, so indexing is fairly manual.
+
+```Mojo
+reader[0] # first element
+```
