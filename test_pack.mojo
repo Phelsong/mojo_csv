@@ -18,7 +18,7 @@ var VALID = List[String](
 )
 
 
-fn main() -> None:
+fn main() raises:
     var in_csv: Path = Path(argv()[1])
     var rd = CsvReader(in_csv)
     print(in_csv)
@@ -35,20 +35,7 @@ fn main() -> None:
             )
         assert_true(len(rd.elements) == 9)
     except AssertionError:
-        print(AssertionError)
-        exit()
+        raise AssertionError
     print("----------")
     print("parse successful")
 
-
-# columns: 3
-# ----------
-# item1
-# item2
-# "ite,em3"
-# pic
-#  pi c
-# pic
-# r_i_1
-# r_i_2
-# r_i_3
