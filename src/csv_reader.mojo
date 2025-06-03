@@ -13,7 +13,6 @@ struct CsvReader:
     var raw: String
     var raw_length: Int
     var delimiter: String
-    # var escape: String
     var CR: String
     var LFCR: String
     var QM: String
@@ -32,7 +31,6 @@ struct CsvReader:
         self.length = 0
         self.QM = quotation_mark
         self.delimiter = delimiter
-        #self.escape = "\\"
         self.CR = "\n"
         self.LFCR = "\r\n"
         self.row_count = 0
@@ -125,13 +123,14 @@ struct CsvReader:
     fn __len__(self) -> Int:
         return self.length
 
-    # fn __iter__(self) -> Iterator[String]:
+    # fn __iter__(self) -> collection:
     #     return self.elements.__iter__()
 
     # fn __repr__(self) -> String:
-    #     var out = String("[")
+    #     var out: String = "["
     #     for el in self.elements:
     #         out.append(el)
+    #     out.append("]")
     #     return out
 
     # fn __copyinit__(out self) -> CsvReader:
