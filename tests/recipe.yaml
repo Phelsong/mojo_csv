@@ -1,5 +1,5 @@
 context:
-  version: 1.2.0
+  version: 1.2.1
 
 package:
   name: "mojo_csv"
@@ -7,7 +7,7 @@ package:
 
 source:
   - git: https://github.com/Phelsong/mojo_csv.git
-    rev: ${{ git rev-parse HEAD }}
+    rev: c0c5b4b1fd7d7c4db1c504d1104b38f10ef9ff70
 
 build:
   number: 0
@@ -24,10 +24,10 @@ tests:
   - script:
       - if: unix
         then:
-          - mojo test
+          - mojo test tests
     files:
       recipe:
-        - tests
+        - mojo_csv
 
 about:
   homepage: https://github.com/Phelsong/mojo_csv
