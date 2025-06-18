@@ -3,6 +3,7 @@ from pathlib import Path
 from sys import exit
 from testing import assert_true
 
+
 # https://www.rfc-editor.org/rfc/rfc4180
 #
 @value
@@ -42,7 +43,7 @@ struct CsvReader:
         self._create_reader()
         self.length = self.elements.__len__()
         # Just always treat the first row as optional headers
-        self.headers = self.elements[0:self.col_count]
+        self.headers = self.elements[0 : self.col_count]
 
     fn _create_reader(mut self):
         var col_start: Int = 0
@@ -77,10 +78,7 @@ struct CsvReader:
 
                 # handle trailing delimiter
                 if pos + 1 <= self.raw_length:
-                    if (
-                        self.raw[pos + 1] == self.CR
-                        or self.raw[pos + 1] == self.LFCR
-                    ):
+                    if self.raw[pos + 1] == self.CR or self.raw[pos + 1] == self.LFCR:
                         skip = True
                         col_start = pos + 2
                         self.row_count += 1
@@ -118,7 +116,6 @@ struct CsvReader:
         if index < 0 or index >= self.row_count:
             raise Error("Index out of range")
         return self.elements[index]
-
 
     fn __len__(self) -> Int:
         return self.length

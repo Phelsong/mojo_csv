@@ -1,4 +1,3 @@
-from collections import Dict, List
 from pathlib import Path, cwd
 from sys import argv, exit
 from testing import assert_true
@@ -18,9 +17,10 @@ var VALID = List[String](
 )
 
 
-fn main() raises:
-    var in_csv: Path = Path(argv()[1])
+fn test_pack() raises:
+    var in_csv: Path = cwd().joinpath("tests/test.csv")
     var rd = CsvReader(in_csv)
+    # print(rd)
     print("parsing:", in_csv)
     print("----------")
     try:
@@ -39,6 +39,9 @@ fn main() raises:
         assert_true(rd.row_count == 3)
         print("elements:", rd.__len__(), "of 9")
         assert_true(len(rd.elements) == 9)
+
+        # for x in rd:
+        # print(x)
     except AssertionError:
         print(AssertionError)
         raise AssertionError

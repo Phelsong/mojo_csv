@@ -6,3 +6,4 @@
 dist/*
 sha256sum.mojo_csv.mojopkg.txt
 mojo_csv.mojopkg
+output

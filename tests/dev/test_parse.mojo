@@ -17,8 +17,8 @@ var VALID = List[String](
 )
 
 
-fn main() raises:
-    var in_csv: Path = cwd().joinpath("test.csv")
+fn test_parse() raises:
+    var in_csv: Path = cwd().joinpath("tests/test.csv")
     var rd = CsvReader(in_csv)
     # print(rd)
     print("parsing:", in_csv)
@@ -41,7 +41,7 @@ fn main() raises:
         assert_true(len(rd.elements) == 9)
 
         # for x in rd:
-            # print(x)
+        # print(x)
     except AssertionError:
         print(AssertionError)
         raise AssertionError
