@@ -1,5 +1,7 @@
 <!-- ![mojo_csv_logo](./mojo_csv_logo.png) -->
-<image src='./mojo_csv_logo.png' width='300'/>
+<image src='./mojo_csv_logo.png' width='900'/>
+
+![language](https://img.shields.io/badge/language-mojo-orange)
 ![license](https://badgen.net/static/license/MIT/red)
 
 # Mojo Csv
