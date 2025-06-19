@@ -6,8 +6,8 @@ from testing import assert_true
 
 # https://www.rfc-editor.org/rfc/rfc4180
 #
-@value
-struct CsvReader:
+@fieldwise_init
+struct CsvReader(Copyable, Representable, Sized, Stringable, Writable):
     # var data: Dict[String,String]
     var headers: List[String]
     var elements: List[String]
@@ -20,6 +20,7 @@ struct CsvReader:
     var row_count: Int
     var col_count: Int
     var length: Int
+    var index: Int
 
     fn __init__(
         out self,
@@ -27,6 +28,7 @@ struct CsvReader:
         owned delimiter: String = ",",
         owned quotation_mark: String = '"',
     ) raises:
+        self.index = 0
         self.raw = ""
         self.raw_length = 0
         self.length = 0
@@ -120,22 +122,35 @@ struct CsvReader:
     fn __len__(self) -> Int:
         return self.length
 
-    # fn __iter__(self) -> collection:
-    #     return self.elements.__iter__()
+    fn __repr__(self) -> String:
+        var out: String = "["
 
-    # fn __repr__(self) -> String:
-    #     var out: String = "["
-    #     for el in self.elements:
-    #         out.append(el)
-    #     out.append("]")
-    #     return out
+        for el in self.elements:
+            out += "'"
+            out += String(el)
+            out += "', "
+        out += "]"
+        return out
 
-    # fn __copyinit__(out self) -> CsvReader:
-    #     self.raw = existing.raw
-    #     self.delimiter = existing.delimiter
-    #     self.QM = existing.QM
-    #     self.elements = existing.elements
-    #     self.col_count = existing.col_count
-    #     self.row_count = existing.row_count
-    #     return self
-    # ---------------------
+    fn __str__(self) -> String:
+        return String.write(self)
+
+    fn write_to[W: Writer](self, mut writer: W) -> None:
+        writer.write(String("CsvReader" + repr(self)))
+
+    @parameter
+    fn __next_ref__(mut self) -> String:
+        self.index += 1
+        return self.elements[self.index - 1]
+
+    @always_inline
+    fn __next__(mut self) -> String:
+        return self.__next_ref__()
+
+    @always_inline
+    fn __has_next__(self) -> Bool:
+        return self.length > self.index
+
+    @always_inline
+    fn __iter__(self) -> Self:
+        return self

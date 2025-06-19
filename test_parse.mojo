@@ -4,20 +4,19 @@ from testing import assert_true
 
 from src.csv_reader import CsvReader
 
-var VALID = List[String](
-    "item1",
-    "item2",
-    '"ite,em3"',
-    '"p""ic"',
-    " pi c",
-    "pic",
-    "r_i_1",
-    '"r_i_2"""',
-    "r_i_3",
-)
 
-
-fn test_parse() raises:
+fn main() raises:
+    var VALID = List[String](
+        "item1",
+        "item2",
+        '"ite,em3"',
+        '"p""ic"',
+        " pi c",
+        "pic",
+        "r_i_1",
+        '"r_i_2"""',
+        "r_i_3",
+    )
     var in_csv: Path = cwd().joinpath("tests/test.csv")
     var rd = CsvReader(in_csv)
     # print(rd)
@@ -39,11 +38,27 @@ fn test_parse() raises:
         assert_true(rd.row_count == 3)
         print("elements:", rd.__len__(), "of 9")
         assert_true(len(rd.elements) == 9)
+        t_methods(rd)
 
-        # for x in rd:
-        # print(x)
     except AssertionError:
-        print(AssertionError)
+        # print(AssertionError)
         raise AssertionError
     print("----------")
     print("parse successful")
+
+
+fn t_methods(rd: CsvReader) raises:
+    try:
+        print(String("repr: {}").format(repr(rd)))
+        print(String("len: {}").format(len(rd)))
+        print(String("print: {}").format(rd))
+        print(String("slice: {}").format(rd[0]))
+        print(String("slice repr: {}").format(repr(rd[0])))
+        print("iter: ...")
+        print("----")
+        for x in rd:
+            print(x)
+        print("----")
+    except:
+        print("error")
+        raise
