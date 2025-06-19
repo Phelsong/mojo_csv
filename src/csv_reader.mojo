@@ -6,6 +6,7 @@ from testing import assert_true
 
 # https://www.rfc-editor.org/rfc/rfc4180
 #
+@value
 @fieldwise_init
 struct CsvReader(Copyable, Representable, Sized, Stringable, Writable):
     # var data: Dict[String,String]
