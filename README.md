@@ -1,3 +1,7 @@
+<!-- ![mojo_csv_logo](./mojo_csv_logo.png) -->
+<image src='./mojo_csv_logo.png' width='300'/>
+![license](https://badgen.net/static/license/MIT/red)
+
 # Mojo Csv
 
 Csv parsing library written in pure Mojo
