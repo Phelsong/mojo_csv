@@ -10,7 +10,13 @@ Csv parsing library written in pure Mojo
 
 ### usage
 
-Add the Modular community channel (https://repo.prefix.dev/modular-community) to your mojoproject.toml file or pixi.toml file in the channels section.
+Add the Modular community channel (https://repo.prefix.dev/modular-community) to your pixi.toml file in the channels section.
+
+```title:pixi.toml
+channels = ["conda-forge", "https://conda.modular.com/max", "https://repo.prefix.dev/modular-community"]
+```
+
+`pixi add mojo_csv`
 
 ##### Basic Usage
 
