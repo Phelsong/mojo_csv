@@ -66,10 +66,36 @@ reader[0] # first element
 
 ### Performance
 
-Small file benchmark (avg of 1mil)
+- average times over 1k iterations
+- 7950x@5.8ghz (peak clock)
+- uncompiled
+- single-threaded
+
+micro file benchmark (3 rows)
+mini (100 rows)
+small (1k rows)
+medium file benchmark (100k rows)
+large file benchmark (2m rows)
 
 ```log
 ✨ Pixi task (bench): mojo bench.mojo
-average time in ms:
-0.007338
+running benchmark for micro csv:
+average time in ms for micro file:
+0.007699
+-------------------------
+running benchmark for mini csv:
+average time in ms for mini file:
+0.241136
+-------------------------
+running benchmark for small csv:
+average time in ms for small file:
+1.388513
+-------------------------
+running benchmark for medium csv:
+average time in ms for medium file:
+121.217188
+-------------------------
+running benchmark for large csv:
+average time in ms for large file:
+3582.876541
 ```
