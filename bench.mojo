@@ -12,7 +12,8 @@ fn bench_parse() capturing:
         var in_csv: Path = cwd().joinpath("tests/test.csv")
         _ = CsvReader(in_csv)
     except:
-        pass
+        # exit so we don't get false numbers
+        exit()
 
 
 fn main():
