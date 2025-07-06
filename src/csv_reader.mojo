@@ -7,21 +7,18 @@ from testing import assert_true
 # https://www.rfc-editor.org/rfc/rfc4180
 #
 @value
-@fieldwise_init
 struct CsvReader(Copyable, Representable, Sized, Stringable, Writable):
     # var data: Dict[String,String]
-    var headers: List[String]
-    var elements: List[String]
     var raw: String
     var raw_length: Int
-    var delimiter: String
-    var CR: String
-    var LFCR: String
-    var QM: String
+    var index: Int
+    var length: Int
     var row_count: Int
     var col_count: Int
-    var length: Int
-    var index: Int
+    var elements: List[String]
+    var delimiter: String
+    var QM: String
+    var headers: List[String]
 
     fn __init__(
         out self,
@@ -29,20 +26,17 @@ struct CsvReader(Copyable, Representable, Sized, Stringable, Writable):
         owned delimiter: String = ",",
         owned quotation_mark: String = '"',
     ) raises:
-        self.index = 0
         self.raw = ""
         self.raw_length = 0
+        self.index = 0
         self.length = 0
-        self.QM = quotation_mark
-        self.delimiter = delimiter
-        self.CR = "\n"
-        self.LFCR = "\r\n"
         self.row_count = 0
         self.col_count = 0
         self.elements = List[String]()
         self.headers = List[String]()
+        self.delimiter = delimiter
+        self.QM = quotation_mark
         self._open(in_csv)
-        self.raw_length = self.raw.__len__()
         self._create_reader()
         self.length = self.elements.__len__()
         # Just always treat the first row as optional headers
@@ -81,7 +75,7 @@ struct CsvReader(Copyable, Representable, Sized, Stringable, Writable):
 
                 # handle trailing delimiter
                 if pos + 1 <= self.raw_length:
-                    if self.raw[pos + 1] == self.CR or self.raw[pos + 1] == self.LFCR:
+                    if self.raw[pos + 1] == "\n" or self.raw[pos + 1] == "\r\n":
                         skip = True
                         col_start = pos + 2
                         self.row_count += 1
@@ -90,7 +84,7 @@ struct CsvReader(Copyable, Representable, Sized, Stringable, Writable):
 
             # --------
             # end of row no trailing delimiter
-            elif char == self.CR or char == self.LFCR:
+            elif char == "\n" or char == "\r\n":
                 self.elements.append(self.raw[col_start:pos])
 
                 if self.row_count == 0:
@@ -111,6 +105,7 @@ struct CsvReader(Copyable, Representable, Sized, Stringable, Writable):
             assert_true(in_csv.exists())
             self.raw = in_csv.read_text()
             assert_true(self.raw != "")
+            self.raw_length = len(self.raw)
         except AssertionError:
             print("Error opening file:", in_csv)
             raise AssertionError

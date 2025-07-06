@@ -63,3 +63,13 @@ currently the array is only 1D, so indexing is fairly manual.
 ```Mojo
 reader[0] # first element
 ```
+
+### Performance
+
+Small file benchmark (avg of 1mil)
+
+```log
+✨ Pixi task (bench): mojo bench.mojo
+average time in ms:
+0.007338
+```
