@@ -18,4 +18,4 @@ fn test_methods() raises:
         for x in rd:
             assert_true(x)
     except AssertionError:
-        raise 
+        raise
