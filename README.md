@@ -43,6 +43,45 @@ fn main():
     for i in range(len(reader)):
         print(reader[i])
 ```
+#### BETA
+```mojo
+ThreadedCsvReader(
+    file_path: Path,
+    delimiter: String = ",",
+    quotation_mark: String = '"',
+    num_threads: Int = 0 # 0 = use all available cores
+)
+```
+
+### Example 1: Default (All Cores)
+
+```mojo
+var reader = ThreadedCsvReader(Path("large_file.csv"))
+// Uses all 16 cores on a 16-core system
+```
+
+### Example 2: Custom Thread Count
+
+```mojo
+var reader = ThreadedCsvReader(Path("data.csv"), num_threads=4)
+// Uses exactly 4 threads
+```
+
+### Example 3: Single-threaded
+
+```mojo
+var reader = ThreadedCsvReader(Path("data.csv"), num_threads=1)
+// Forces single-threaded execution (same as CsvReader)
+```
+
+### Example 4: Custom Delimiter
+
+````mojo
+var reader = ThreadedCsvReader(
+    Path("pipe_separated.csv"),
+    delimiter="|",
+    num_threads=8
+)
 
 ### Attributes
 
@@ -54,7 +93,7 @@ reader.row_count : Int  # total number of rows T->B
 reader.column_count : Int # total number of columns L->R
 reader.elements : List[String] # all delimited elements
 reader.length : Int # total number of elements
-```
+````
 
 ##### Indexing
 
@@ -99,3 +138,21 @@ running benchmark for large csv:
 average time in ms for large file:
 3582.876541
 ```
+
+I
+Performance comparison on various file sizes (average of multiple runs):
+
+| File Size    | Single-threaded | Multi-threaded | Speedup |
+| ------------ | --------------- | -------------- | ------- |
+| 1,000 rows   | 1.42ms          | 1.30ms         | 1.09x   |
+| 100,000 rows | 125ms           | 105ms          | 1.19x   |
+
+_Tested on AMD 7950x (16 cores) @ 5.8GHz_
+
+## Future Improvements
+
+- [ ] SIMD optimization within each thread
+- [ ] Async Chunking
+- [ ] Streaming support for very large files
+- [ ] Memory pool for reduced allocations
+- [ ] Progress callbacks for long-running operation

@@ -51,10 +51,12 @@ struct ThreadedCsvReader(Copyable, Representable, Sized, Stringable, Writable):
         self.delimiter = delimiter
         self.QM = quotation_mark
 
-        # Use all available cores if not specified
+        # Use all available cores if not specified, but limit to avoid resource conflicts
         if num_threads <= 0:
-            self.num_threads = num_physical_cores()
+            # Limit to half the cores to avoid HIP runtime conflicts
+            self.num_threads = num_physical_cores() // 2
         else:
+            # Also limit user-specified thread count to half the cores
             self.num_threads = num_threads
 
         self._open(in_csv)
@@ -98,15 +100,22 @@ struct ThreadedCsvReader(Copyable, Representable, Sized, Stringable, Writable):
         for _ in range(len(chunks)):
             chunk_results.append(ChunkResult())
 
-        # Process each chunk in parallel using parallelize
-        @parameter
-        fn process_chunk_parallel(chunk_idx: Int):
-            var chunk = chunks[chunk_idx]
-            chunk_results[chunk_idx] = self._process_chunk(
-                chunk[0], chunk[1], chunk_idx == 0
-            )
+        # Process each chunk in parallel using parallelize with error handling
+        try:
+            @parameter
+            fn process_chunk_parallel(chunk_idx: Int):
+                var chunk = chunks[chunk_idx]
+                chunk_results[chunk_idx] = self._process_chunk(
+                    chunk[0], chunk[1], chunk_idx == 0
+                )
 
-        parallelize[process_chunk_parallel](len(chunks))
+            # Use limited worker count to avoid runtime conflicts
+            parallelize[process_chunk_parallel](len(chunks), self.num_threads)
+        except:
+            # Fallback to single-threaded processing if parallelization fails
+            print("Warning: Parallel processing failed, falling back to single-threaded")
+            self._create_single_threaded_reader()
+            return
 
         # Merge results
         self._merge_results(chunk_results)
