@@ -2,7 +2,9 @@ from pathlib import Path, cwd
 from sys import exit
 from testing import assert_true
 from time import time_function, perf_counter
-from src.csv_reader import CsvReader
+
+# from src.csv_reader import CsvReader
+from mojo_csv import CsvReader
 
 
 fn bench_parse_micro() capturing:
@@ -27,9 +29,7 @@ fn bench_parse_mini() capturing:
 
 fn bench_parse_small() capturing:
     try:
-        var in_csv: Path = cwd().joinpath(
-            "tests/datablist/organizations-1000.csv"
-        )
+        var in_csv: Path = cwd().joinpath("tests/datablist/organizations-1000.csv")
         _ = CsvReader(in_csv)
     except:
         print("error in micro")
@@ -48,9 +48,7 @@ fn bench_parse_medium() capturing:
 
 fn bench_parse_large() capturing:
     try:
-        var in_csv: Path = cwd().joinpath(
-            "tests/datablist/products-2000000.csv"
-        )
+        var in_csv: Path = cwd().joinpath("tests/datablist/products-2000000.csv")
         _ = CsvReader(in_csv)
     except:
         print("error in large")

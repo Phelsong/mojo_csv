@@ -2,8 +2,9 @@ from pathlib import Path, cwd
 from sys import exit
 from testing import assert_true
 from time import time_function, perf_counter
-from src.csv_reader import CsvReader
-from src.threaded_csv_reader import ThreadedCsvReader
+
+# from src import CsvReader, ThreadedCsvReader
+from mojo_csv import CsvReader, ThreadedCsvReader
 
 
 fn bench_single_threaded_medium() capturing:
@@ -26,9 +27,7 @@ fn bench_multi_threaded_medium() capturing:
 
 fn bench_single_threaded_small() capturing:
     try:
-        var in_csv: Path = cwd().joinpath(
-            "tests/datablist/organizations-1000.csv"
-        )
+        var in_csv: Path = cwd().joinpath("tests/datablist/organizations-1000.csv")
         var _ = CsvReader(in_csv)
     except:
         print("error in single threaded small")
@@ -37,9 +36,7 @@ fn bench_single_threaded_small() capturing:
 
 fn bench_multi_threaded_small() capturing:
     try:
-        var in_csv: Path = cwd().joinpath(
-            "tests/datablist/organizations-1000.csv"
-        )
+        var in_csv: Path = cwd().joinpath("tests/datablist/organizations-1000.csv")
         var _ = ThreadedCsvReader(in_csv)
     except:
         print("error in multi threaded small")
@@ -54,18 +51,18 @@ fn main():
     print("Small file benchmark (1,000 rows):")
     print("Single-threaded:")
     var time_single_small: Float64 = 0
-    for _ in range(100):
+    for _ in range(10):
         var elapsed = time_function[bench_single_threaded_small]()
         time_single_small += elapsed / 1000000
-    var avg_single_small = time_single_small / 100
+    var avg_single_small = time_single_small / 10
     print("Average time:", round(avg_single_small, 6), "ms")
 
     print("Multi-threaded:")
     var time_multi_small: Float64 = 0
-    for _ in range(100):
+    for _ in range(10):
         var elapsed = time_function[bench_multi_threaded_small]()
         time_multi_small += elapsed / 1000000
-    var avg_multi_small = time_multi_small / 100
+    var avg_multi_small = time_multi_small / 10
     print("Average time:", round(avg_multi_small, 6), "ms")
 
     var speedup_small = avg_single_small / avg_multi_small
@@ -76,18 +73,18 @@ fn main():
     print("Medium file benchmark (100,000 rows):")
     print("Single-threaded:")
     var time_single_medium: Float64 = 0
-    for _ in range(100):
+    for _ in range(10):
         var elapsed = time_function[bench_single_threaded_medium]()
         time_single_medium += elapsed / 1000000
-    var avg_single_medium = time_single_medium / 100
+    var avg_single_medium = time_single_medium / 10
     print("Average time:", round(avg_single_medium, 6), "ms")
 
     print("Multi-threaded:")
     var time_multi_medium: Float64 = 0
-    for _ in range(100):
+    for _ in range(10):
         var elapsed = time_function[bench_multi_threaded_medium]()
         time_multi_medium += elapsed / 1000000
-    var avg_multi_medium = time_multi_medium / 100
+    var avg_multi_medium = time_multi_medium / 10
     print("Average time:", round(avg_multi_medium, 6), "ms")
 
     var speedup_medium = avg_single_medium / avg_multi_medium

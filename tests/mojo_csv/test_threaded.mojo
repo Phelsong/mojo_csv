@@ -1,5 +1,7 @@
 from pathlib import Path, cwd
 from mojo_csv import CsvReader, ThreadedCsvReader
+from testing import assert_true
+from logger import Logger
 
 
 fn test_correctness():
@@ -16,25 +18,23 @@ fn test_correctness():
         print("=== Correctness Test ===")
         print("Single-threaded length:", single_reader.length)
         print("Multi-threaded length:", threaded_reader.length)
-        print("Lengths match:", single_reader.length == threaded_reader.length)
-
-        # print(single_reader.raw)
-        # print("-------")
-        # print(threaded_reader.raw)
-        # print("-------")
+        assert_true(
+            len(single_reader) == len(threaded_reader),
+            "!! lengths don't match ",
+        )
 
         print("Single-threaded row count:", single_reader.row_count)
         print("Multi-threaded row count:", threaded_reader.row_count)
-        print(
-            "Row counts match:",
+        assert_true(
             single_reader.row_count == threaded_reader.row_count,
+            "!! row counts don't match",
         )
 
         print("Single-threaded col count:", single_reader.col_count)
         print("Multi-threaded col count:", threaded_reader.col_count)
-        print(
-            "Col counts match:",
+        assert_true(
             single_reader.col_count == threaded_reader.col_count,
+            "!! column counts don't match",
         )
 
         # Check first few elements
@@ -49,6 +49,7 @@ fn test_correctness():
                 elements_match = False
                 break
 
+        assert_true(elements_match)
         print("First", check_count, "elements match:", elements_match)
 
         # Check headers
@@ -61,6 +62,7 @@ fn test_correctness():
         else:
             headers_match = False
 
+        assert_true(headers_match)
         print("Headers match:", headers_match)
 
         if elements_match and headers_match:

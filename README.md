@@ -43,7 +43,9 @@ fn main():
     for i in range(len(reader)):
         print(reader[i])
 ```
+
 #### BETA
+
 ```mojo
 ThreadedCsvReader(
     file_path: Path,
@@ -139,13 +141,29 @@ average time in ms for large file:
 3582.876541
 ```
 
-I
-Performance comparison on various file sizes (average of multiple runs):
+=== ThreadedCsvReader Performance Comparison ===
 
-| File Size    | Single-threaded | Multi-threaded | Speedup |
-| ------------ | --------------- | -------------- | ------- |
-| 1,000 rows   | 1.42ms          | 1.30ms         | 1.09x   |
-| 100,000 rows | 125ms           | 105ms          | 1.19x   |
+Small file benchmark (1,000 rows):
+Single-threaded:
+Average time: 1.568471 ms
+Multi-threaded:
+Average time: 1.247501 ms
+Speedup: 1.26 x
+
+---
+
+Medium file benchmark (100,000 rows):
+Single-threaded:
+Average time: 135.703628 ms
+Multi-threaded:
+Average time: 103.920012 ms
+Speedup: 1.31 x
+
+---
+
+Summary:
+Small file speedup: 1.26 x
+Medium file speedup: 1.31 x
 
 _Tested on AMD 7950x (16 cores) @ 5.8GHz_
 

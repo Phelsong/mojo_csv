@@ -1,10 +1,8 @@
-from collections import Dict, List
+from collections import List
 from pathlib import Path
 from sys import exit, num_physical_cores
 from testing import assert_true
 from algorithm import parallelize
-from memory import memset_zero, memcpy
-from utils import Variant
 
 
 @value
@@ -36,8 +34,8 @@ struct ThreadedCsvReader(Copyable, Representable, Sized, Stringable, Writable):
     fn __init__(
         out self,
         owned in_csv: Path,
-        owned delimiter: String = ",",
-        owned quotation_mark: String = '"',
+        delimiter: String = ",",
+        quotation_mark: String = '"',
         num_threads: Int = 0,
     ) raises:
         self.raw = ""
@@ -51,10 +49,9 @@ struct ThreadedCsvReader(Copyable, Representable, Sized, Stringable, Writable):
         self.delimiter = delimiter
         self.QM = quotation_mark
 
-        # Use all available cores if not specified, but limit to avoid resource conflicts
-        if num_threads <= 0:
-            # Limit to half the cores to avoid HIP runtime conflicts
-            self.num_threads = num_physical_cores() // 2
+        # Use all available cores if not specified
+        if num_threads == 0:
+            self.num_threads = num_physical_cores() * 2
         else:
             # Also limit user-specified thread count to half the cores
             self.num_threads = num_threads
@@ -102,6 +99,7 @@ struct ThreadedCsvReader(Copyable, Representable, Sized, Stringable, Writable):
 
         # Process each chunk in parallel using parallelize with error handling
         try:
+
             @parameter
             fn process_chunk_parallel(chunk_idx: Int):
                 var chunk = chunks[chunk_idx]
@@ -113,7 +111,9 @@ struct ThreadedCsvReader(Copyable, Representable, Sized, Stringable, Writable):
             parallelize[process_chunk_parallel](len(chunks), self.num_threads)
         except:
             # Fallback to single-threaded processing if parallelization fails
-            print("Warning: Parallel processing failed, falling back to single-threaded")
+            print(
+                "Warning: Parallel processing failed, falling back to single-threaded"
+            )
             self._create_single_threaded_reader()
             return
 
@@ -195,10 +195,8 @@ struct ThreadedCsvReader(Copyable, Representable, Sized, Stringable, Writable):
             if not in_quotes and (char == "\n" or char == "\r\n"):
                 # This is a safe split point
                 var next_pos = pos + 1
-                if (
-                    char == "\r"
-                    and next_pos < self.raw_length
-                    and self.raw[next_pos] == "\n"
+                if next_pos < self.raw_length and (
+                    self.raw[next_pos] == "\n" or self.raw[next_pos] == "\r\n"
                 ):
                     next_pos += 1
                     skip = True
@@ -232,12 +230,9 @@ struct ThreadedCsvReader(Copyable, Representable, Sized, Stringable, Writable):
                     end_split = num_splits
 
                 if start_split < end_split:
-                    chunks.append(
-                        (split_points[start_split], split_points[end_split])
-                    )
+                    chunks.append((split_points[start_split], split_points[end_split]))
 
                 current_split = end_split
-
         return chunks
 
     fn _process_chunk(
@@ -290,10 +285,7 @@ struct ThreadedCsvReader(Copyable, Representable, Sized, Stringable, Writable):
                     result.row_count += 1
                     col_start = pos + 1
 
-        # Handle last element in chunk
-        if col_start < end_pos:
-            result.elements.append(self.raw[col_start:end_pos])
-            result.row_count += 1
+        result.row_count += 1
 
         return result
 

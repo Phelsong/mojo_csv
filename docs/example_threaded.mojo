@@ -8,25 +8,25 @@ fn main():
     print("=== Threaded CSV Reader Example ===")
     print("Available CPU cores:", num_physical_cores())
     print()
-    
+
     try:
         # Example 1: Use all available cores (default)
         var csv_path = cwd().joinpath("tests/datablist/organizations-1000.csv")
         var reader = ThreadedCsvReader(csv_path)
-        
+
         print("File:", csv_path)
         print("Rows:", reader.row_count)
         print("Columns:", reader.col_count)
         print("Total elements:", len(reader))
         print("Threads used:", reader.num_threads)
         print()
-        
+
         # Print first few rows
         print("Headers:")
         for i in range(reader.col_count):
             print(" ", reader.headers[i])
         print()
-        
+
         print("First 3 data rows:")
         for row in range(1, min(4, reader.row_count)):
             print("Row", row, ":")
@@ -35,16 +35,26 @@ fn main():
                 if element_idx < len(reader):
                     print("  ", reader.headers[col], ":", reader[element_idx])
             print()
-        
+
         # Example 2: Specify number of threads
         print("=== Custom Thread Count ===")
         var reader_2threads = ThreadedCsvReader(csv_path, num_threads=2)
-        print("Using 2 threads - Rows:", reader_2threads.row_count, "Elements:", len(reader_2threads))
-        
+        print(
+            "Using 2 threads - Rows:",
+            reader_2threads.row_count,
+            "Elements:",
+            len(reader_2threads),
+        )
+
         # Example 3: Force single-threaded (for comparison)
         var reader_single = ThreadedCsvReader(csv_path, num_threads=1)
-        print("Single-threaded - Rows:", reader_single.row_count, "Elements:", len(reader_single))
-        
+        print(
+            "Single-threaded - Rows:",
+            reader_single.row_count,
+            "Elements:",
+            len(reader_single),
+        )
+
     except Exception:
         print("Error reading CSV file")
 
@@ -61,7 +71,10 @@ fn usage_tips():
     print("   - Speedup typically 1.1-1.5x on modern multi-core systems")
     print()
     print("2. Constructor options:")
-    print("   ThreadedCsvReader(file_path, delimiter=',', quotation_mark='\"', num_threads=0)")
+    print(
+        "   ThreadedCsvReader(file_path, delimiter=',', quotation_mark='\"',"
+        " num_threads=0)"
+    )
     print("   - num_threads=0: Use all available cores (default)")
     print("   - num_threads=1: Force single-threaded")
     print("   - num_threads=N: Use exactly N threads")
