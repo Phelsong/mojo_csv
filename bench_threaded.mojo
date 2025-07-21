@@ -3,8 +3,9 @@ from sys import exit
 from testing import assert_true
 from time import time_function, perf_counter
 
-# from src import CsvReader, ThreadedCsvReader
-from mojo_csv import CsvReader, ThreadedCsvReader
+from src import CsvReader, ThreadedCsvReader
+
+# from mojo_csv import CsvReader, ThreadedCsvReader
 
 
 fn bench_single_threaded_medium() capturing:

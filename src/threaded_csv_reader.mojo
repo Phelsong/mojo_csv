@@ -290,6 +290,7 @@ struct ThreadedCsvReader(Copyable, Representable, Sized, Stringable, Writable):
         var skip = False
 
         raw_bytes = self.raw.__getitem__(Slice(start_pos, end_pos)).as_bytes()
+        # raw_bytes = self.raw.as_bytes()
         for pos in range(start_pos, end_pos):
             var current_byte: UInt8 = raw_bytes[pos]
 
@@ -310,8 +311,6 @@ struct ThreadedCsvReader(Copyable, Representable, Sized, Stringable, Writable):
                 in_quotes = True
                 continue
 
-            # --------
-            # Delimiter
             if current_byte == self.delimiter_byte:
                 result.elements.append(self.raw[col_start:pos])
                 col_start = pos + 1
@@ -319,36 +318,19 @@ struct ThreadedCsvReader(Copyable, Representable, Sized, Stringable, Writable):
                 if is_first_chunk and result.row_count == 0:
                     result.col_count += 1
 
-                # handle trailing delimiter
-                if pos + 1 < end_pos:
-                    var next_byte = raw_bytes[pos + 1]
+                if pos + 1 <= end_pos:
                     if (
-                        next_byte == self.newline_byte
-                        or next_byte == self.carriage_return_byte
+                        raw_bytes[pos + 1] == self.newline_byte
+                        or raw_bytes[pos + 1] == self.carriage_return_byte
                     ):
                         skip = True
-                        col_start = (
-                            pos + 2 if next_byte
-                            == self.carriage_return_byte else pos + 2
-                        )
+                        col_start = pos + 2
                         result.row_count += 1
-                elif pos + 1 == end_pos:
-                    break
 
-            # --------
-            # end of row no trailing delimiter
-            elif current_byte == self.newline_byte:
-                result.elements.append(self.raw[col_start:pos])
-
-                if is_first_chunk and result.row_count == 0:
-                    result.col_count += 1
-
-                if pos + 1 <= end_pos:
-                    result.row_count += 1
-                    col_start = pos + 1
-
-            # end of row no trailing delimiter
-            elif current_byte == self.newline_byte:
+            elif (
+                current_byte == self.newline_byte
+                or current_byte == self.carriage_return_byte
+            ):
                 result.elements.append(self.raw[col_start:pos])
 
                 if is_first_chunk and result.row_count == 0:
@@ -357,23 +339,8 @@ struct ThreadedCsvReader(Copyable, Representable, Sized, Stringable, Writable):
                 if pos + 1 < end_pos:
                     result.row_count += 1
                     col_start = pos + 1
-
-            elif (
-                current_byte == self.carriage_return_byte
-                and pos + 1 < end_pos
-                and raw_bytes[pos + 1] == self.newline_byte
-            ):
-                # Handle \r\n
-                result.elements.append(self.raw[col_start:pos])
-
-                if is_first_chunk and result.row_count == 0:
-                    result.col_count += 1
-
-                if pos + 2 <= end_pos:
-                    result.row_count += 1
-                    col_start = pos + 2
-                    skip = True  # Skip the \n in next iteration
-
+        
+        result.row_count +=1
         return result
 
     fn _merge_results(mut self, chunk_results: List[ChunkResult]):
