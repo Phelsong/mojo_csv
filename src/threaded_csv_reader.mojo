@@ -27,8 +27,8 @@ struct ThreadedCsvReader(Copyable, Representable, Sized, Stringable, Writable):
     var col_count: Int
     var elements: List[String]
     var delimiter: String
-    var QM: String
     var delimiter_byte: Int
+    var QM: String
     var quote_byte: Int
     var newline_byte: Int
     var carriage_return_byte: Int
@@ -52,6 +52,7 @@ struct ThreadedCsvReader(Copyable, Representable, Sized, Stringable, Writable):
         self.headers = List[String]()
         self.delimiter = delimiter
         self.QM = quotation_mark
+        # Get byte representation for efficient character comparison
         self.delimiter_byte = ord(self.delimiter)
         self.quote_byte = ord(self.QM)
         self.newline_byte = ord("\n")
@@ -65,6 +66,7 @@ struct ThreadedCsvReader(Copyable, Representable, Sized, Stringable, Writable):
             self.num_threads = num_threads
 
         self._open(in_csv)
+
         self._create_threaded_reader()
         self.length = self.elements.__len__()
 
@@ -76,6 +78,7 @@ struct ThreadedCsvReader(Copyable, Representable, Sized, Stringable, Writable):
         try:
             assert_true(in_csv.exists())
             self.raw = in_csv.read_text()
+            # self.raw_bytes = in_csv.read_bytes()
             assert_true(self.raw != "")
             self.raw_length = len(self.raw)
         except AssertionError:
@@ -85,7 +88,7 @@ struct ThreadedCsvReader(Copyable, Representable, Sized, Stringable, Writable):
     fn _create_threaded_reader(mut self) raises:
         """Main entry point for threaded CSV parsing"""
         # For small files, use single-threaded approach
-        if self.raw_length < 100 or self.num_threads == 1:
+        if self.raw_length < 20 or self.num_threads == 1:
             self._create_single_threaded_reader()
             return
 
@@ -171,6 +174,7 @@ struct ThreadedCsvReader(Copyable, Representable, Sized, Stringable, Writable):
                 # handle trailing delimiter
                 if pos + 1 < self.raw_length:
                     var next_byte = raw_bytes[pos + 1]
+
                     if (
                         next_byte == self.newline_byte
                         or next_byte == self.carriage_return_byte
@@ -220,22 +224,26 @@ struct ThreadedCsvReader(Copyable, Representable, Sized, Stringable, Writable):
         var in_quotes = False
         var skip = False
 
+        raw_bytes = self.raw.as_bytes()
         for pos in range(self.raw_length):
-            var char = self.raw[pos]
+            var char = raw_bytes[pos]
 
             if skip:
                 skip = False
                 continue
 
-            if char == self.QM:
+            if char == self.quote_byte:
                 in_quotes = not in_quotes
                 continue
 
-            if not in_quotes and (char == "\n" or char == "\r\n"):
+            if not in_quotes and (
+                char == self.newline_byte or char == self.carriage_return_byte
+            ):
                 # This is a safe split point
                 var next_pos = pos + 1
                 if next_pos < self.raw_length and (
-                    self.raw[next_pos] == "\n" or self.raw[next_pos] == "\r\n"
+                    raw_bytes[next_pos] == self.newline_byte
+                    or raw_bytes[next_pos] == self.carriage_return_byte
                 ):
                     next_pos += 1
                     skip = True
@@ -285,25 +293,30 @@ struct ThreadedCsvReader(Copyable, Representable, Sized, Stringable, Writable):
         var in_quotes = False
         var skip = False
 
+        # raw_slice = self.raw.__getitem__(Slice(start_pos, end_pos))
+        # raw_bytes = raw_slice.as_bytes()
+        raw_bytes = self.raw.as_bytes()
         for pos in range(start_pos, end_pos):
-            var char = self.raw[pos]
+            var current_byte: UInt8 = raw_bytes[pos]
 
+            # Handle bypasses/escapes
             if skip:
                 skip = False
                 continue
 
             if in_quotes:
-                if char != self.QM:
+                if current_byte != self.quote_byte:
                     continue
                 else:
                     in_quotes = False
                     continue
 
-            if char == self.QM:
+            # if in QM, ignore any cases
+            if current_byte == self.quote_byte:
                 in_quotes = True
                 continue
 
-            if char == self.delimiter:
+            if current_byte == self.delimiter_byte:
                 result.elements.append(self.raw[col_start:pos])
                 col_start = pos + 1
 
@@ -311,12 +324,12 @@ struct ThreadedCsvReader(Copyable, Representable, Sized, Stringable, Writable):
                     result.col_count += 1
 
                 if pos + 1 < end_pos:
-                    if self.raw[pos + 1] == "\n" or self.raw[pos + 1] == "\r\n":
+                    if raw_bytes[pos + 1] == self.newline_byte:
                         skip = True
                         col_start = pos + 2
                         result.row_count += 1
 
-            elif char == "\n" or char == "\r\n":
+            elif current_byte == self.newline_byte:
                 result.elements.append(self.raw[col_start:pos])
 
                 if is_first_chunk and result.row_count == 0:
@@ -327,7 +340,6 @@ struct ThreadedCsvReader(Copyable, Representable, Sized, Stringable, Writable):
                     col_start = pos + 1
 
         result.row_count += 1
-
         return result
 
     fn _merge_results(mut self, chunk_results: List[ChunkResult]):

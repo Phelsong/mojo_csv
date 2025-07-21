@@ -3,8 +3,9 @@ from sys import exit
 from testing import assert_true
 from time import time_function, perf_counter
 
-# from src import CsvReader, ThreadedCsvReader
-from mojo_csv import CsvReader, ThreadedCsvReader
+from src import CsvReader, ThreadedCsvReader
+
+# from mojo_csv import CsvReader, ThreadedCsvReader
 
 
 fn bench_single_threaded_medium() capturing:
@@ -40,6 +41,24 @@ fn bench_multi_threaded_small() capturing:
         var _ = ThreadedCsvReader(in_csv)
     except:
         print("error in multi threaded small")
+        exit()
+
+
+fn bench_single_threaded_large() capturing:
+    try:
+        var in_csv: Path = cwd().joinpath("tests/datablist/products-2000000.csv")
+        var _ = CsvReader(in_csv)
+    except:
+        print("error in single threaded large")
+        exit()
+
+
+fn bench_multi_threaded_large() capturing:
+    try:
+        var in_csv: Path = cwd().joinpath("tests/datablist/products-2000000.csv")
+        var _ = ThreadedCsvReader(in_csv)
+    except:
+        print("error in multi threaded large")
         exit()
 
 
@@ -91,6 +110,29 @@ fn main():
     print("Speedup:", round(speedup_medium, 2), "x")
     print("-------------------------")
 
+    # Test large file (2M rows)
+    print("Large file benchmark (2,000,000 rows):")
+    print("Single-threaded:")
+    var time_single_large: Float64 = 0
+    for _ in range(3):  # Fewer iterations for large file
+        var elapsed = time_function[bench_single_threaded_large]()
+        time_single_large += elapsed / 1000000
+    var avg_single_large = time_single_large / 3
+    print("Average time:", round(avg_single_large, 6), "ms")
+
+    print("Multi-threaded:")
+    var time_multi_large: Float64 = 0
+    for _ in range(3):  # Fewer iterations for large file
+        var elapsed = time_function[bench_multi_threaded_large]()
+        time_multi_large += elapsed / 1000000
+    var avg_multi_large = time_multi_large / 3
+    print("Average time:", round(avg_multi_large, 6), "ms")
+
+    var speedup_large = avg_single_large / avg_multi_large
+    print("Speedup:", round(speedup_large, 2), "x")
+    print("-------------------------")
+
     print("Summary:")
     print("Small file speedup:", round(speedup_small, 2), "x")
     print("Medium file speedup:", round(speedup_medium, 2), "x")
+    print("Large file speedup:", round(speedup_large, 2), "x")

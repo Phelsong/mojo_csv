@@ -3,8 +3,9 @@ from sys import exit
 from testing import assert_true
 from time import time_function, perf_counter
 
-# from src.csv_reader import CsvReader
-from mojo_csv import CsvReader
+from src.csv_reader import CsvReader
+
+# from mojo_csv import CsvReader
 
 
 fn bench_parse_micro() capturing:
@@ -72,7 +73,7 @@ fn main():
     for _ in range(1000):
         elapsed = time_function[bench_parse_mini]()
         time += elapsed / 1000000
-    avg = time / 100
+    avg = time / 1000
     print("average time in ms for mini file:")
     print(round(avg, 6))
     print("-------------------------")
@@ -87,18 +88,18 @@ fn main():
     print("-------------------------")
     print("running benchmark for medium csv:")
     time = 0
-    for _ in range(1000):
+    for _ in range(100):
         elapsed = time_function[bench_parse_medium]()
         time += elapsed / 1000000
-    avg = time / 1000
+    avg = time / 100
     print("average time in ms for medium file:")
     print(round(avg, 6))
     print("-------------------------")
     print("running benchmark for large csv:")
     time = 0
-    for _ in range(1000):
+    for _ in range(100):
         elapsed = time_function[bench_parse_large]()
         time += elapsed / 1000000
-    avg = time / 1000
+    avg = time / 100
     print("average time in ms for large file:")
     print(round(avg, 6))
