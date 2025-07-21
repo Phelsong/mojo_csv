@@ -40,7 +40,7 @@ struct CsvReader(Copyable, Representable, Sized, Stringable, Writable):
         self.headers = List[String]()
         self.delimiter = delimiter
         self.QM = quotation_mark
-        self.delimiter_byte = ord(self.delimiter[0])
+        self.delimiter_byte = ord(self.delimiter)
         self.quote_byte = ord(self.QM)
         self.newline_byte = ord("\n")
         self.carriage_return_byte = ord("\r")

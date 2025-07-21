@@ -60,7 +60,7 @@ struct ThreadedCsvReader(Copyable, Representable, Sized, Stringable, Writable):
 
         # Use all available cores if not specified
         if num_threads == 0:
-            self.num_threads = num_physical_cores()
+            self.num_threads = num_physical_cores() * 2
         else:
             # Also limit user-specified thread count to half the cores
             self.num_threads = num_threads
@@ -88,7 +88,7 @@ struct ThreadedCsvReader(Copyable, Representable, Sized, Stringable, Writable):
     fn _create_threaded_reader(mut self) raises:
         """Main entry point for threaded CSV parsing"""
         # For small files, use single-threaded approach
-        if self.raw_length < 50 or self.num_threads == 1:
+        if self.raw_length < 20 or self.num_threads == 1:
             self._create_single_threaded_reader()
             return
 
@@ -289,8 +289,8 @@ struct ThreadedCsvReader(Copyable, Representable, Sized, Stringable, Writable):
         var in_quotes = False
         var skip = False
 
-        raw_bytes = self.raw.__getitem__(Slice(start_pos, end_pos)).as_bytes()
-        # raw_bytes = self.raw.as_bytes()
+        # raw_bytes = self.raw.__getitem__(Slice(start_pos, end_pos)).as_bytes()
+        raw_bytes = self.raw.as_bytes()
         for pos in range(start_pos, end_pos):
             var current_byte: UInt8 = raw_bytes[pos]
 
