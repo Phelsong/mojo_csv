@@ -29,7 +29,6 @@ struct ThreadedCsvReader(Copyable, Representable, Sized, Stringable, Writable):
     var delimiter: String
     var delimiter_byte: Int
     var QM: String
-    var delimiter_byte: Int
     var quote_byte: Int
     var newline_byte: Int
     var carriage_return_byte: Int
@@ -111,6 +110,7 @@ struct ThreadedCsvReader(Copyable, Representable, Sized, Stringable, Writable):
 
         # Process each chunk in parallel using parallelize with error handling
         try:
+
             @parameter
             fn process_chunk_parallel(chunk_idx: Int):
                 var chunk = chunks[chunk_idx]
@@ -125,6 +125,7 @@ struct ThreadedCsvReader(Copyable, Representable, Sized, Stringable, Writable):
             print(
                 "Warning: Parallel processing failed, falling back to"
                 " single-threaded"
+            )
             self._create_single_threaded_reader()
             return
 
@@ -288,7 +289,8 @@ struct ThreadedCsvReader(Copyable, Representable, Sized, Stringable, Writable):
         var in_quotes = False
         var skip = False
 
-        # raw_bytes = self.raw.__getitem__(Slice(start_pos, end_pos)).as_bytes()
+        # raw_slice = self.raw.__getitem__(Slice(start_pos, end_pos))
+        # raw_bytes = raw_slice.as_bytes()
         raw_bytes = self.raw.as_bytes()
         for pos in range(start_pos, end_pos):
             var current_byte: UInt8 = raw_bytes[pos]
@@ -317,7 +319,7 @@ struct ThreadedCsvReader(Copyable, Representable, Sized, Stringable, Writable):
                 if is_first_chunk and result.row_count == 0:
                     result.col_count += 1
 
-                if pos + 1 <= end_pos:
+                if pos + 1 < end_pos:
                     if (
                         raw_bytes[pos + 1] == self.newline_byte
                         or raw_bytes[pos + 1] == self.carriage_return_byte
@@ -338,8 +340,8 @@ struct ThreadedCsvReader(Copyable, Representable, Sized, Stringable, Writable):
                 if pos + 1 < end_pos:
                     result.row_count += 1
                     col_start = pos + 1
-        
-        result.row_count +=1
+
+        result.row_count += 1
         return result
 
     fn _merge_results(mut self, chunk_results: List[ChunkResult]):

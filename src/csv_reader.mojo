@@ -91,7 +91,10 @@ struct CsvReader(Copyable, Representable, Sized, Stringable, Writable):
                 # handle trailing delimiter
                 if pos + 1 < self.raw_length:
                     var next_byte = raw_bytes[pos + 1]
-                    if next_byte == self.newline_byte or next_byte == self.carriage_return_byte:
+                    if (
+                        next_byte == self.newline_byte
+                        or next_byte == self.carriage_return_byte
+                    ):
                         skip = True
                         col_start = (
                             pos + 2 if next_byte

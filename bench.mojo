@@ -30,9 +30,7 @@ fn bench_parse_mini() capturing:
 
 fn bench_parse_small() capturing:
     try:
-        var in_csv: Path = cwd().joinpath(
-            "tests/datablist/organizations-1000.csv"
-        )
+        var in_csv: Path = cwd().joinpath("tests/datablist/organizations-1000.csv")
         _ = CsvReader(in_csv)
     except:
         print("error in micro")
@@ -51,9 +49,7 @@ fn bench_parse_medium() capturing:
 
 fn bench_parse_large() capturing:
     try:
-        var in_csv: Path = cwd().joinpath(
-            "tests/datablist/products-2000000.csv"
-        )
+        var in_csv: Path = cwd().joinpath("tests/datablist/products-2000000.csv")
         _ = CsvReader(in_csv)
     except:
         print("error in large")

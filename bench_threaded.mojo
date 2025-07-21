@@ -28,9 +28,7 @@ fn bench_multi_threaded_medium() capturing:
 
 fn bench_single_threaded_small() capturing:
     try:
-        var in_csv: Path = cwd().joinpath(
-            "tests/datablist/organizations-1000.csv"
-        )
+        var in_csv: Path = cwd().joinpath("tests/datablist/organizations-1000.csv")
         var _ = CsvReader(in_csv)
     except:
         print("error in single threaded small")
@@ -39,9 +37,7 @@ fn bench_single_threaded_small() capturing:
 
 fn bench_multi_threaded_small() capturing:
     try:
-        var in_csv: Path = cwd().joinpath(
-            "tests/datablist/organizations-1000.csv"
-        )
+        var in_csv: Path = cwd().joinpath("tests/datablist/organizations-1000.csv")
         var _ = ThreadedCsvReader(in_csv)
     except:
         print("error in multi threaded small")
@@ -50,9 +46,7 @@ fn bench_multi_threaded_small() capturing:
 
 fn bench_single_threaded_large() capturing:
     try:
-        var in_csv: Path = cwd().joinpath(
-            "tests/datablist/products-2000000.csv"
-        )
+        var in_csv: Path = cwd().joinpath("tests/datablist/products-2000000.csv")
         var _ = CsvReader(in_csv)
     except:
         print("error in single threaded large")
@@ -61,9 +55,7 @@ fn bench_single_threaded_large() capturing:
 
 fn bench_multi_threaded_large() capturing:
     try:
-        var in_csv: Path = cwd().joinpath(
-            "tests/datablist/products-2000000.csv"
-        )
+        var in_csv: Path = cwd().joinpath("tests/datablist/products-2000000.csv")
         var _ = ThreadedCsvReader(in_csv)
     except:
         print("error in multi threaded large")
