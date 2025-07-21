@@ -8,8 +8,8 @@ from testing import assert_true
 #
 @value
 struct CsvReader(Copyable, Representable, Sized, Stringable, Writable):
-    # var data: Dict[String,String]
     var raw: String
+    # var raw_bytes: SIMD[UInt8,1]
     var raw_length: Int
     var index: Int
     var length: Int
@@ -17,7 +17,11 @@ struct CsvReader(Copyable, Representable, Sized, Stringable, Writable):
     var col_count: Int
     var elements: List[String]
     var delimiter: String
+    var delimiter_byte: Int
     var QM: String
+    var quote_byte: Int
+    var newline_byte: Int
+    var carriage_return_byte: Int
     var headers: List[String]
 
     fn __init__(
@@ -36,6 +40,10 @@ struct CsvReader(Copyable, Representable, Sized, Stringable, Writable):
         self.headers = List[String]()
         self.delimiter = delimiter
         self.QM = quotation_mark
+        self.delimiter_byte = ord(self.delimiter)
+        self.quote_byte = ord(self.QM)
+        self.newline_byte = ord("\n")
+        self.carriage_return_byte = ord("\r")
         self._open(in_csv)
         self._create_reader()
         self.length = self.elements.__len__()
@@ -46,27 +54,34 @@ struct CsvReader(Copyable, Representable, Sized, Stringable, Writable):
         var col_start: Int = 0
         var in_quotes: Bool = False
         var skip: Bool = False
+
+        # Get byte representation for efficient character comparison
+        raw_bytes = self.raw.as_bytes()
+
         for pos in range(self.raw_length):
-            # StringSlice is still not a Char
-            var char: String = self.raw[pos]
-            # --------
+            var current_byte: UInt8 = raw_bytes[pos]
+            # var char: String
+
             # Handle bypasses/escapes
             if skip:
                 skip = False
                 continue
+
             if in_quotes:
-                if char != self.QM:
+                if current_byte != self.quote_byte:
                     continue
                 else:
                     in_quotes = False
                     continue
+
             # if in QM, ignore any cases
-            if char == self.QM:
+            if current_byte == self.quote_byte:
                 in_quotes = True
                 continue
+
             # --------
             # Delimiter
-            if char == self.delimiter:
+            if current_byte == self.delimiter_byte:
                 self.elements.append(self.raw[col_start:pos])
                 col_start = pos + 1
 
@@ -74,17 +89,21 @@ struct CsvReader(Copyable, Representable, Sized, Stringable, Writable):
                     self.col_count += 1
 
                 # handle trailing delimiter
-                if pos + 1 <= self.raw_length:
-                    if self.raw[pos + 1] == "\n" or self.raw[pos + 1] == "\r\n":
+                if pos + 1 < self.raw_length:
+                    var next_byte = raw_bytes[pos + 1]
+                    if next_byte == self.newline_byte or next_byte == self.carriage_return_byte:
                         skip = True
-                        col_start = pos + 2
+                        col_start = (
+                            pos + 2 if next_byte
+                            == self.carriage_return_byte else pos + 2
+                        )
                         self.row_count += 1
-                else:
+                elif pos + 1 == self.raw_length:
                     break
 
             # --------
             # end of row no trailing delimiter
-            elif char == "\n" or char == "\r\n":
+            elif current_byte == self.newline_byte:
                 self.elements.append(self.raw[col_start:pos])
 
                 if self.row_count == 0:
@@ -93,17 +112,28 @@ struct CsvReader(Copyable, Representable, Sized, Stringable, Writable):
                 if pos + 1 <= self.raw_length:
                     self.row_count += 1
                     col_start = pos + 1
-            # end of file, even if not CR :: Spec #2
-            elif pos == self.raw_length:
+
+            elif (
+                current_byte == self.carriage_return_byte
+                and pos + 1 < self.raw_length
+                and raw_bytes[pos + 1] == self.newline_byte
+            ):
+                # Handle \r\n
                 self.elements.append(self.raw[col_start:pos])
-                self.row_count += 1
-            # -------
-        # -------------
+
+                if self.row_count == 0:
+                    self.col_count += 1
+
+                if pos + 2 <= self.raw_length:
+                    self.row_count += 1
+                    col_start = pos + 2
+                    skip = True  # Skip the \n in next iteration
 
     fn _open(mut self, in_csv: Path) raises:
         try:
             assert_true(in_csv.exists())
             self.raw = in_csv.read_text()
+            # self.raw_bytes = in_csv.read_bytes()
             assert_true(self.raw != "")
             self.raw_length = len(self.raw)
         except AssertionError:
