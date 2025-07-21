@@ -45,6 +45,7 @@ fn main():
 ```
 
 #### BETA
+1.4.0 will be the last version where this isn't the default
 
 ```mojo
 ThreadedCsvReader(

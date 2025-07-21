@@ -123,8 +123,7 @@ struct ThreadedCsvReader(Copyable, Representable, Sized, Stringable, Writable):
         except:
             # Fallback to single-threaded processing if parallelization fails
             print(
-                "Warning: Parallel processing failed, falling back to"
-                " single-threaded"
+                "Warning: Parallel processing failed, falling back to single-threaded"
             )
             self._create_single_threaded_reader()
             return
@@ -277,9 +276,7 @@ struct ThreadedCsvReader(Copyable, Representable, Sized, Stringable, Writable):
                     end_split = num_splits
 
                 if start_split < end_split:
-                    chunks.append(
-                        (split_points[start_split], split_points[end_split])
-                    )
+                    chunks.append((split_points[start_split], split_points[end_split]))
 
                 current_split = end_split
         return chunks
