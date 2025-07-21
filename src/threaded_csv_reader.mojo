@@ -324,15 +324,12 @@ struct ThreadedCsvReader(Copyable, Representable, Sized, Stringable, Writable):
                     result.col_count += 1
 
                 if pos + 1 < end_pos:
-                    if (
-                        raw_bytes[pos + 1] == self.newline_byte
-                        or raw_bytes[pos + 1] == self.carriage_return_byte
-                    ):
+                    if raw_bytes[pos + 1] == self.newline_byte:
                         skip = True
                         col_start = pos + 2
                         result.row_count += 1
 
-            elif current_byte == self.newline_byte or current_byte == self.carriage_return_byte:
+            elif current_byte == self.newline_byte:
                 result.elements.append(self.raw[col_start:pos])
 
                 if is_first_chunk and result.row_count == 0:
