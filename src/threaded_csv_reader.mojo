@@ -224,22 +224,26 @@ struct ThreadedCsvReader(Copyable, Representable, Sized, Stringable, Writable):
         var in_quotes = False
         var skip = False
 
+        raw_bytes = self.raw.as_bytes()
         for pos in range(self.raw_length):
-            var char = self.raw[pos]
+            var char = raw_bytes[pos]
 
             if skip:
                 skip = False
                 continue
 
-            if char == self.QM:
+            if char == self.quote_byte:
                 in_quotes = not in_quotes
                 continue
 
-            if not in_quotes and (char == "\r\n" or char == "\n"):
+            if not in_quotes and (
+                char == self.newline_byte or char == self.carriage_return_byte
+            ):
                 # This is a safe split point
                 var next_pos = pos + 1
                 if next_pos < self.raw_length and (
-                    self.raw[next_pos] == "\n" or self.raw[next_pos] == "\r\n"
+                    raw_bytes[next_pos] == self.newline_byte
+                    or raw_bytes[next_pos] == self.carriage_return_byte
                 ):
                     next_pos += 1
                     skip = True
@@ -328,10 +332,7 @@ struct ThreadedCsvReader(Copyable, Representable, Sized, Stringable, Writable):
                         col_start = pos + 2
                         result.row_count += 1
 
-            elif (
-                current_byte == self.newline_byte
-                or current_byte == self.carriage_return_byte
-            ):
+            elif current_byte == self.newline_byte or current_byte == self.carriage_return_byte:
                 result.elements.append(self.raw[col_start:pos])
 
                 if is_first_chunk and result.row_count == 0:
