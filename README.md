@@ -122,48 +122,52 @@ large file benchmark (2m rows)
 ✨ Pixi task (bench): mojo bench.mojo
 running benchmark for micro csv:
 average time in ms for micro file:
-0.007699
+0.01875
 -------------------------
 running benchmark for mini csv:
 average time in ms for mini file:
-0.241136
+0.07328
 -------------------------
 running benchmark for small csv:
 average time in ms for small file:
-1.388513
+0.417368
 -------------------------
 running benchmark for medium csv:
 average time in ms for medium file:
-121.217188
+36.45899
 -------------------------
 running benchmark for large csv:
 average time in ms for large file:
-3582.876541
+1253.19458
 ```
 
 === ThreadedCsvReader Performance Comparison ===
 
 Small file benchmark (1,000 rows):
 Single-threaded:
-Average time: 1.568471 ms
+Average time: 0.500384 ms
 Multi-threaded:
-Average time: 1.247501 ms
-Speedup: 1.26 x
-
----
-
+Average time: 0.451094 ms
+Speedup: 1.11 x
+-------------------------
 Medium file benchmark (100,000 rows):
 Single-threaded:
-Average time: 135.703628 ms
+Average time: 38.124275 ms
 Multi-threaded:
-Average time: 103.920012 ms
-Speedup: 1.31 x
-
----
-
+Average time: 24.650092 ms
+Speedup: 1.55 x
+-------------------------
+Large file benchmark (2,000,000 rows):
+Single-threaded:
+Average time: 1175.345429 ms
+Multi-threaded:
+Average time: 830.02685 ms
+Speedup: 1.42 x
+-------------------------
 Summary:
-Small file speedup: 1.26 x
-Medium file speedup: 1.31 x
+Small file speedup: 1.11 x
+Medium file speedup: 1.55 x
+Large file speedup: 1.42 x
 
 _Tested on AMD 7950x (16 cores) @ 5.8GHz_
 
