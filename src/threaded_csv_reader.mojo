@@ -29,6 +29,7 @@ struct ThreadedCsvReader(Copyable, Representable, Sized, Stringable, Writable):
     var delimiter: String
     var delimiter_byte: Int
     var QM: String
+    var delimiter_byte: Int
     var quote_byte: Int
     var newline_byte: Int
     var carriage_return_byte: Int
@@ -109,25 +110,23 @@ struct ThreadedCsvReader(Copyable, Representable, Sized, Stringable, Writable):
             chunk_results.append(ChunkResult())
 
         # Process each chunk in parallel using parallelize with error handling
-        # try:
+        try:
+            @parameter
+            fn process_chunk_parallel(chunk_idx: Int):
+                var chunk = chunks[chunk_idx]
+                chunk_results[chunk_idx] = self._process_chunk(
+                    chunk[0], chunk[1], chunk_idx == 0
+                )
 
-        @parameter
-        fn process_chunk_parallel(chunk_idx: Int):
-            var chunk = chunks[chunk_idx]
-            chunk_results[chunk_idx] = self._process_chunk(
-                chunk[0], chunk[1], chunk_idx == 0
-            )
-
-        # Use limited worker count to avoid runtime conflicts
-        parallelize[process_chunk_parallel](len(chunks), self.num_threads)
-        # except:
-        #     # Fallback to single-threaded processing if parallelization fails
-        #     print(
-        #         "Warning: Parallel processing failed, falling back to"
-        #         " single-threaded"
-        #     )
-        #     self._create_single_threaded_reader()
-        #     return
+            # Use limited worker count to avoid runtime conflicts
+            parallelize[process_chunk_parallel](len(chunks), self.num_threads)
+        except:
+            # Fallback to single-threaded processing if parallelization fails
+            print(
+                "Warning: Parallel processing failed, falling back to"
+                " single-threaded"
+            self._create_single_threaded_reader()
+            return
 
         # Merge results
         self._merge_results(chunk_results)
@@ -174,10 +173,10 @@ struct ThreadedCsvReader(Copyable, Representable, Sized, Stringable, Writable):
                 # handle trailing delimiter
                 if pos + 1 < self.raw_length:
                     var next_byte = raw_bytes[pos + 1]
-                    if next_byte == self.newline_byte or (
-                        next_byte == self.carriage_return_byte
-                        and pos + 2 < self.raw_length
-                        and raw_bytes[pos + 2] == self.newline_byte
+
+                    if (
+                        next_byte == self.newline_byte
+                        or next_byte == self.carriage_return_byte
                     ):
                         skip = True
                         col_start = (
