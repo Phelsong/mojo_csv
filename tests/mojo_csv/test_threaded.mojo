@@ -1,5 +1,5 @@
 from pathlib import Path, cwd
-from mojo_csv import CsvReader, ThreadedCsvReader
+from mojo_csv import CsvReader
 from testing import assert_true
 from logger import Logger
 
@@ -10,25 +10,25 @@ fn test_correctness():
         var in_csv = cwd().joinpath("tests/datablist/organizations-1000.csv")
 
         # Single-threaded
-        var single_reader = CsvReader(in_csv)
+        var single_reader = CsvReader(in_csv, num_threads=1)
 
         # Multi-threaded
-        var threaded_reader = ThreadedCsvReader(in_csv)
+        var threaded_reader = CsvReader(in_csv)
 
         print("=== Correctness Test ===")
         print("Single-threaded length:", single_reader.length)
         print("Multi-threaded length:", threaded_reader.length)
-        # assert_true(
-        #     len(single_reader) == len(threaded_reader),
-        #     "!! lengths don't match ",
-        # )
+        assert_true(
+            len(single_reader) == len(threaded_reader),
+            "!! lengths don't match ",
+        )
 
         print("Single-threaded row count:", single_reader.row_count)
         print("Multi-threaded row count:", threaded_reader.row_count)
-        # assert_true(
-        #     single_reader.row_count == threaded_reader.row_count,
-        #     "!! row counts don't match",
-        # )
+        assert_true(
+            single_reader.row_count == threaded_reader.row_count,
+            "!! row counts don't match",
+        )
 
         print("Single-threaded col count:", single_reader.col_count)
         print("Multi-threaded col count:", threaded_reader.col_count)
@@ -47,7 +47,7 @@ fn test_correctness():
                 print("Single:", single_reader[i])
                 print("Threaded:", threaded_reader[i])
                 elements_match = False
-                break
+                # break
 
         # assert_true(elements_match)
         print("First", check_count, "elements match:", elements_match)

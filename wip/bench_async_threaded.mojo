@@ -1,6 +1,6 @@
 #!/usr/bin/env mojo
 
-from src.threaded_csv_reader import ThreadedCsvReader
+from src.csv_reader import ThreadedCsvReader
 from pathlib import Path
 from time import now
 

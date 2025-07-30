@@ -34,3 +34,10 @@ fn test_pack() raises:
     except AssertionError:
         raise AssertionError
     print("parse successful")
+
+
+fn main():
+    try:
+        test_pack()
+    except:
+        print("error")

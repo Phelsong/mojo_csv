@@ -66,7 +66,7 @@ fn main():
         time += elapsed / 1000000
     var avg: Float64 = time / 1000
     print("average time in ms for micro file:")
-    print(round(avg, 6))
+    print(round(avg, 4), "ms")
     print("-------------------------")
     print("running benchmark for mini csv:")
     time = 0
@@ -75,7 +75,7 @@ fn main():
         time += elapsed / 1000000
     avg = time / 1000
     print("average time in ms for mini file:")
-    print(round(avg, 6))
+    print(round(avg, 4), "ms")
     print("-------------------------")
     print("running benchmark for small csv:")
     time = 0
@@ -84,7 +84,7 @@ fn main():
         time += elapsed / 1000000
     avg = time / 1000
     print("average time in ms for small file:")
-    print(round(avg, 6))
+    print(round(avg, 3), "ms")
     print("-------------------------")
     print("running benchmark for medium csv:")
     time = 0
@@ -93,13 +93,13 @@ fn main():
         time += elapsed / 1000000
     avg = time / 100
     print("average time in ms for medium file:")
-    print(round(avg, 6))
+    print(round(avg, 2), "ms")
     print("-------------------------")
     print("running benchmark for large csv:")
     time = 0
-    for _ in range(100):
+    for _ in range(20):
         elapsed = time_function[bench_parse_large]()
         time += elapsed / 1000000
-    avg = time / 100
+    avg = time / 20
     print("average time in ms for large file:")
-    print(round(avg, 6))
+    print(round(avg, 1), "ms")

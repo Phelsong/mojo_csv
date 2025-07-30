@@ -1,2 +1,2 @@
 from .csv_reader import CsvReader
-from .threaded_csv_reader import ThreadedCsvReader
+from .st_csv_reader import STCsvReader
