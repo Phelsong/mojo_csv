@@ -1,6 +1,6 @@
 from collections import List
 from pathlib import Path
-from sys import exit, num_logical_cores
+from sys import num_logical_cores
 from testing import assert_true
 from algorithm import parallelize
 
@@ -61,8 +61,8 @@ struct CsvReader(Copyable, Representable, Sized, Stringable, Writable):
         # Use all available cores if not specified
         if num_threads == 0:
             cores = num_logical_cores()
-            if cores != 1:
-                self.num_threads = cores - 1
+            if cores > 2:
+                self.num_threads = cores - 2
             else:
                 self.num_threads = 1
         else:
@@ -166,16 +166,12 @@ struct CsvReader(Copyable, Representable, Sized, Stringable, Writable):
                 # handle trailing delimiter
                 if pos + 1 < self.raw_length:
                     var next_byte = raw_bytes[pos + 1]
-
                     if (
                         next_byte == self.newline_byte
                         or next_byte == self.carriage_return_byte
                     ):
                         skip = True
-                        col_start = (
-                            pos + 2 if next_byte
-                            == self.carriage_return_byte else pos + 1
-                        )
+                        col_start = pos + 2
                         self.row_count += 1
                 elif pos + 1 == self.raw_length:
                     break
@@ -269,9 +265,7 @@ struct CsvReader(Copyable, Representable, Sized, Stringable, Writable):
                     end_split = num_splits
 
                 if start_split < end_split:
-                    chunks.append(
-                        (split_points[start_split], split_points[end_split])
-                    )
+                    chunks.append((split_points[start_split], split_points[end_split]))
 
                 current_split = end_split
         return chunks
@@ -321,6 +315,7 @@ struct CsvReader(Copyable, Representable, Sized, Stringable, Writable):
                         col_start = pos + 2
                         result.row_count += 1
 
+            # handle newline
             elif current_byte == self.newline_byte:
                 result.elements.append(self.raw[col_start:pos])
 
@@ -331,12 +326,10 @@ struct CsvReader(Copyable, Representable, Sized, Stringable, Writable):
                     result.row_count += 1
                     col_start = pos + 1
 
+            # handle carriage
             elif (
-                current_byte == self.carriage_return_byte
-                and pos + 1 < self.raw_length
-                and raw_bytes[pos + 1] == self.newline_byte
+                current_byte == self.carriage_return_byte and pos + 1 < self.raw_length
             ):
-                # Handle \r\n
                 result.elements.append(self.raw[col_start:pos])
 
                 if result.row_count == 0:
@@ -345,7 +338,7 @@ struct CsvReader(Copyable, Representable, Sized, Stringable, Writable):
                 if pos + 2 <= self.raw_length:
                     result.row_count += 1
                     col_start = pos + 2
-                    skip = True  # Skip the \n in next iteration
+                    skip = True
 
         # result.row_count += 1
         return result
