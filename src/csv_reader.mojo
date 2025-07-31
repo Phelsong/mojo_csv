@@ -20,7 +20,7 @@ struct ChunkResult:
 @value
 struct CsvReader(Copyable, Representable, Sized, Stringable, Writable):
     var raw: String
-    var raw_bytes: Byte
+    var raw_bytes: List[Byte]
     var raw_length: Int
     var index: Int
     var length: Int
@@ -44,7 +44,7 @@ struct CsvReader(Copyable, Representable, Sized, Stringable, Writable):
         num_threads: Int = 0,
     ) raises:
         self.raw = ""
-        self.raw_bytes = List[Byte()]
+        self.raw_bytes = List[](Byte())
         self.raw_length = 0
         self.index = 0
         self.length = 0
@@ -131,7 +131,6 @@ struct CsvReader(Copyable, Representable, Sized, Stringable, Writable):
         var col_start: Int = 0
         var in_quotes: Bool = False
         var skip: Bool = False
-
 
         for pos in range(self.raw_length):
             var current_byte: UInt8 = self.raw_bytes[pos]
