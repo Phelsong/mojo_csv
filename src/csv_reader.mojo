@@ -20,6 +20,7 @@ struct ChunkResult:
 @value
 struct CsvReader(Copyable, Representable, Sized, Stringable, Writable):
     var raw: String
+    var raw_bytes: Byte
     var raw_length: Int
     var index: Int
     var length: Int
@@ -43,6 +44,7 @@ struct CsvReader(Copyable, Representable, Sized, Stringable, Writable):
         num_threads: Int = 0,
     ) raises:
         self.raw = ""
+        self.raw_bytes = List[Byte()]
         self.raw_length = 0
         self.index = 0
         self.length = 0
@@ -82,8 +84,8 @@ struct CsvReader(Copyable, Representable, Sized, Stringable, Writable):
         try:
             assert_true(in_csv.exists())
             self.raw = in_csv.read_text()
-            # self.raw_bytes = in_csv.read_bytes()
             assert_true(self.raw != "")
+            self.raw_bytes = in_csv.read_bytes()
             self.raw_length = len(self.raw)
         except AssertionError:
             print("Error opening file:", in_csv)
@@ -130,12 +132,9 @@ struct CsvReader(Copyable, Representable, Sized, Stringable, Writable):
         var in_quotes: Bool = False
         var skip: Bool = False
 
-        # Get byte representation for efficient character comparison
-        raw_bytes = self.raw.as_bytes()
 
         for pos in range(self.raw_length):
-            var current_byte: UInt8 = raw_bytes[pos]
-            # var char: String
+            var current_byte: UInt8 = self.raw_bytes[pos]
 
             # Handle bypasses/escapes
             if skip:
@@ -165,7 +164,7 @@ struct CsvReader(Copyable, Representable, Sized, Stringable, Writable):
 
                 # handle trailing delimiter
                 if pos + 1 < self.raw_length:
-                    var next_byte = raw_bytes[pos + 1]
+                    var next_byte = self.raw_bytes[pos + 1]
                     if (
                         next_byte == self.newline_byte
                         or next_byte == self.carriage_return_byte
@@ -191,7 +190,7 @@ struct CsvReader(Copyable, Representable, Sized, Stringable, Writable):
             elif (
                 current_byte == self.carriage_return_byte
                 and pos + 1 < self.raw_length
-                and raw_bytes[pos + 1] == self.newline_byte
+                and self.raw_bytes[pos + 1] == self.newline_byte
             ):
                 # Handle \r\n
                 self.elements.append(self.raw[col_start:pos])
@@ -212,9 +211,8 @@ struct CsvReader(Copyable, Representable, Sized, Stringable, Writable):
         var in_quotes = False
         var skip = False
 
-        raw_bytes = self.raw.as_bytes()
         for pos in range(self.raw_length):
-            var char = raw_bytes[pos]
+            var char = self.raw_bytes[pos]
 
             if skip:
                 skip = False
@@ -230,8 +228,8 @@ struct CsvReader(Copyable, Representable, Sized, Stringable, Writable):
                 # This is a safe split point
                 var next_pos = pos + 1
                 if next_pos < self.raw_length and (
-                    raw_bytes[next_pos] == self.newline_byte
-                    or raw_bytes[next_pos] == self.carriage_return_byte
+                    self.raw_bytes[next_pos] == self.newline_byte
+                    or self.raw_bytes[next_pos] == self.carriage_return_byte
                 ):
                     next_pos += 1
                     skip = True
@@ -279,11 +277,8 @@ struct CsvReader(Copyable, Representable, Sized, Stringable, Writable):
         var in_quotes = False
         var skip = False
 
-        # raw_slice = self.raw.__getitem__(Slice(start_pos, end_pos))
-        # raw_bytes = raw_slice.as_bytes()
-        raw_bytes = self.raw.as_bytes()
         for pos in range(start_pos, end_pos):
-            var current_byte: UInt8 = raw_bytes[pos]
+            var current_byte: UInt8 = self.raw_bytes[pos]
 
             # Handle bypasses/escapes
             if skip:
@@ -310,7 +305,7 @@ struct CsvReader(Copyable, Representable, Sized, Stringable, Writable):
                     result.col_count += 1
 
                 if pos + 1 < end_pos:
-                    if raw_bytes[pos + 1] == self.newline_byte:
+                    if self.raw_bytes[pos + 1] == self.newline_byte:
                         skip = True
                         col_start = pos + 2
                         result.row_count += 1
@@ -340,7 +335,6 @@ struct CsvReader(Copyable, Representable, Sized, Stringable, Writable):
                     col_start = pos + 2
                     skip = True
 
-        # result.row_count += 1
         return result
 
     fn _merge_results(mut self, chunk_results: List[ChunkResult]):
