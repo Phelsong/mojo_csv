@@ -8,7 +8,7 @@ version = "1.5.0"
 
 [tasks]
 test = "mojo test tests/mojo_csv"
-test-dev = "mojo test_parse.mojo"
+test-dev = "mojo tests/test_parse.mojo"
 format = { cmd = "mojo format -l 88 ." }
 prep = { depends-on = ["format", "test-dev"] }
 bench = "mojo tests/bench/bench.mojo"
