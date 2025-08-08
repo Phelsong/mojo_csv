@@ -5,8 +5,8 @@ from testing import assert_true
 from algorithm import parallelize
 
 
-@value
-struct ChunkResult:
+@fieldwise_init
+struct ChunkResult(Copyable, Movable):
     var elements: List[String]
     var row_count: Int
     var col_count: Int
@@ -17,7 +17,7 @@ struct ChunkResult:
         self.col_count = 0
 
 
-@value
+@fieldwise_init
 struct CsvReader(Copyable, Representable, Sized, Stringable, Writable):
     var raw: String
     var raw_bytes: List[Byte]
