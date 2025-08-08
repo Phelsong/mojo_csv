@@ -2,7 +2,7 @@ from pathlib import Path, cwd
 from sys import argv, exit
 from testing import assert_true
 
-from src.csv_reader import CsvReader
+from src import CsvReader
 
 
 fn main() raises:
@@ -18,8 +18,7 @@ fn main() raises:
         "r_i_3",
     )
     var in_csv: Path = cwd().joinpath("tests/test.csv")
-    var rd = CsvReader(in_csv)
-    # print(rd)
+    var rd = CsvReader(in_csv, num_threads=2)
     print("parsing:", in_csv)
     print("----------")
     try:

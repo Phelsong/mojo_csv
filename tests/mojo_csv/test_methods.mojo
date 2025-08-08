@@ -19,3 +19,11 @@ fn test_methods() raises:
             assert_true(x)
     except AssertionError:
         raise
+
+
+fn main():
+    try:
+        test_methods()
+        print("success")
+    except:
+        print("error")
