@@ -11,8 +11,10 @@ test = "mojo test tests/mojo_csv"
 test-dev = "mojo test_parse.mojo"
 format = { cmd = "mojo format -l 88 ." }
 prep = { depends-on = ["format", "test-dev"] }
-bench = "mojo bench.mojo"
-bench-t = "mojo bench_threaded.mojo"
+bench = "mojo tests/bench/bench.mojo"
+bench-t = "mojo tests/bench/bench_threaded_diff.mojo"
+bench-dict = "mojo tests/bench/bench_dict_reader.mojo"
+bench-all = "mojo tests/bench/bench.mojo;mojo tests/bench/bench_dict_reader.mojo;mojo tests/bench/bench_threaded.mojo"
 example = "mojo docs/example.mojo"
 pack = "mojo package src -o .pixi/envs/default/lib/mojo/mojo_csv.mojopkg;cp .pixi/envs/default/lib/mojo/mojo_csv.mojopkg dist;sha256sum dist/mojo_csv.mojopkg | awk -F ' ' '{print $1}' > dist/mojo_csv.mojopkg.sha256sum;"
 test-build = { cmd = "rattler-build build --channel https://prefix.dev/modular-community --channel https://conda.modular.com/max --channel conda-forge --variant-config tests/variants.yaml --skip-existing=all --recipe tests/recipe.yaml", env = { MODULAR_MOJO_IMPORT_PATH = "$CONDA_PREFIX/lib/mojo" } }

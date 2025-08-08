@@ -15,7 +15,8 @@ struct CsvRow(Copyable, Movable, Representable, Stringable, Writable):
         self.values = List[String]()
         self.col_count = 0
 
-    fn init_with(out self, headers: List[String], values: List[String]) -> None:
+    # Overloaded constructor to initialize with headers and values
+    fn __init__(out self, headers: List[String], values: List[String]):
         self.headers = headers
         self.values = values
         self.col_count = len(headers)
@@ -92,7 +93,6 @@ struct DictCsvReader(Copyable, Representable, Sized, Stringable, Writable):
         self.index = 1  # start at first data row
 
     fn _row_values(self, row: Int) raises -> List[String]:
-        # row is in data space: 1..row_count-1
         var values = List[String]()
         if row <= 0 or row >= self.row_count:
             raise Error("Row index out of range")
@@ -105,15 +105,19 @@ struct DictCsvReader(Copyable, Representable, Sized, Stringable, Writable):
 
     fn __getitem__(self, row: Int) raises -> CsvRow:
         var vals = self._row_values(row)
-        var r = CsvRow()
-        r.init_with(self.headers, vals)
-        return r
+        return CsvRow(self.headers, vals)
 
     fn __len__(self) -> Int:
         return self.length
 
     fn __repr__(self) -> String:
-        return String("DictCsvReader(rows=" + String(self.length) + ", cols=" + String(self.col_count) + ")")
+        return String(
+            "DictCsvReader(rows="
+            + String(self.length)
+            + ", cols="
+            + String(self.col_count)
+            + ")"
+        )
 
     fn __str__(self) -> String:
         return String.write(self)
@@ -127,8 +131,7 @@ struct DictCsvReader(Copyable, Representable, Sized, Stringable, Writable):
             raise Error("StopIteration")
         var vals = self._row_values(self.index)
         self.index += 1
-        var r = CsvRow()
-        r.init_with(self.headers, vals)
+        var r = CsvRow(self.headers, vals)
         return r
 
     @always_inline

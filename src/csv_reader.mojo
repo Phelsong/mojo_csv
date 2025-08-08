@@ -171,7 +171,7 @@ struct CsvReader(Copyable, Representable, Sized, Stringable, Writable):
                         skip = True
                         col_start = pos + 2
                         self.row_count += 1
-                elif pos + 1 == self.raw_length:
+                elif pos == self.raw_length:
                     break
 
             # --------
@@ -186,21 +186,21 @@ struct CsvReader(Copyable, Representable, Sized, Stringable, Writable):
                     self.row_count += 1
                     col_start = pos + 1
 
-            elif (
-                current_byte == self.carriage_return_byte
-                and pos + 1 < self.raw_length
-                and self.raw_bytes[pos + 1] == self.newline_byte
-            ):
-                # Handle \r\n
+            elif current_byte == self.carriage_return_byte:
                 self.elements.append(self.raw[col_start:pos])
 
                 if self.row_count == 0:
                     self.col_count += 1
 
-                if pos + 2 <= self.raw_length:
+                # Handle \r\n
+                if pos <= self.raw_length:
                     self.row_count += 1
-                    col_start = pos + 2
+                    col_start = pos + 1
                     skip = True  # Skip the \n in next iteration
+
+            elif pos + 1 == self.raw_length:
+                self.elements.append(self.raw[col_start : pos + 1])
+                break
 
     fn _find_split_points(self) -> List[Int]:
         """Find safe positions to split the file (newlines outside quotes)"""
@@ -333,6 +333,10 @@ struct CsvReader(Copyable, Representable, Sized, Stringable, Writable):
                     result.row_count += 1
                     col_start = pos + 2
                     skip = True
+
+            elif pos + 1 == self.raw_length:
+                result.elements.append(self.raw[col_start : pos + 1])
+                break
 
         return result
 

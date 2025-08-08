@@ -88,10 +88,7 @@ reader[0] # first element
 ```
 
 ### Performance
-
-- average times over 100-1k iterations
-- AMD 7950x@5.8ghz
-- single-threaded
+__See BENCHMARK.md for expanded info__
 
 micro file benchmark (3 rows) 
 mini (100 rows) 
@@ -121,34 +118,6 @@ average time in ms for large file:
 878.6 ms
 ```
 
-#### CSV Reader Performance Comparison
-```
-Small file benchmark (1,000 rows): 
-Single-threaded: 
-Average time: 0.455 ms 
-Multi-threaded: 
-Average time: 0.3744 ms 
-Speedup: 1.22 x 
-
-Medium file benchmark (100,000 rows): 
-Single-threaded: 
-Average time: 37.37 ms 
-Multi-threaded: 
-Average time: 24.46 ms 
-Speedup: 1.53 x 
-
-Large file benchmark (2,000,000 rows): 
-Single-threaded: 
-Average time: 1210.3 ms 
-Multi-threaded: 
-Average time: 863.9 ms 
-Speedup: 1.4 x 
-
-Summary:
-Small file speedup: 1.22 x
-Medium file speedup: 1.53 x
-Large file speedup: 1.4 x
-```
 
 ## Future Improvements
 

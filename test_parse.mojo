@@ -2,7 +2,7 @@ from pathlib import Path, cwd
 from sys import argv, exit
 from testing import assert_true
 
-from src import CsvReader
+from src import CsvReader, DictCsvReader, CsvWriter
 
 
 fn main() raises:
@@ -38,6 +38,10 @@ fn main() raises:
         print("elements:", rd.__len__(), "of 9")
         assert_true(len(rd.elements) == 9)
         t_methods(rd)
+        print("----------")
+        t_dict_reader(in_csv)
+        print("----------")
+        t_csv_writer(rd)
 
     except AssertionError:
         # print(AssertionError)
@@ -61,3 +65,28 @@ fn t_methods(rd: CsvReader) raises:
     except:
         print("error")
         raise
+
+
+fn t_dict_reader(in_csv: Path) raises:
+    var dr = DictCsvReader(in_csv)
+    print("DictCsvReader headers:")
+    for h in dr.headers:
+        print(" -", h)
+    var max_rows = min(3, len(dr))
+    print("First", max_rows, "data rows as dictionaries:")
+    for r in range(1, max_rows + 1):
+        var row = dr[r]
+        print("Row", r, ":")
+        for i in range(dr.col_count):
+            var key = dr.headers[i]
+            var val = row.get(key)
+            print("  ", key, ":", val)
+
+
+fn t_csv_writer(rd: CsvReader) raises:
+    var writer = CsvWriter(rd.elements)
+    var out_path = cwd().joinpath("tests/writer-dev.csv")
+    writer.write(out_path, rd.col_count, include_trailing_newline=True)
+    print("CsvWriter output (tests/writer-dev.csv):")
+    var text = out_path.read_text()
+    print(text)

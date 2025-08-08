@@ -5,7 +5,7 @@ from testing import assert_true
 from mojo_csv import CsvReader
 
 
-fn test_pack() raises:
+fn test_basic() raises:
     var VALID = List[String](
         "item1",
         "item2",
