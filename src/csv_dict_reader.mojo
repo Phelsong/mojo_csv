@@ -103,14 +103,14 @@ struct DictCsvReader(Copyable, Representable, Sized, Stringable, Writable):
                 values.append(self.reader[element_idx])
         return values
 
-    fn __getitem__(self, row: Int) raises -> CsvRow:
+    fn __getitem__(read self, row: Int) raises -> CsvRow:
         var vals = self._row_values(row)
         return CsvRow(self.headers, vals)
 
-    fn __len__(self) -> Int:
+    fn __len__(read self) -> Int:
         return self.length
 
-    fn __repr__(self) -> String:
+    fn __repr__(read self) -> String:
         return String(
             "DictCsvReader(rows="
             + String(self.length)
@@ -119,7 +119,7 @@ struct DictCsvReader(Copyable, Representable, Sized, Stringable, Writable):
             + ")"
         )
 
-    fn __str__(self) -> String:
+    fn __str__(read self) -> String:
         return String.write(self)
 
     fn write_to[W: Writer](self, mut writer: W) -> None:
@@ -139,9 +139,9 @@ struct DictCsvReader(Copyable, Representable, Sized, Stringable, Writable):
         return self.__next_ref__()
 
     @always_inline
-    fn __has_next__(self) -> Bool:
+    fn __has_next__(read self) -> Bool:
         return self.index < self.row_count
 
     @always_inline
-    fn __iter__(self) -> Self:
+    fn __iter__(read self) -> Self:
         return self

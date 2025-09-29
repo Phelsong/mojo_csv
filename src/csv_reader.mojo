@@ -42,7 +42,7 @@ struct CsvReader(Copyable, Representable, Sized, Stringable, Writable):
         delimiter: String = ",",
         quotation_mark: String = '"',
         num_threads: Int = 0,
-    ) raises:
+    ):
         self.raw = ""
         self.raw_bytes = List[](Byte())
         self.raw_length = 0
@@ -70,7 +70,7 @@ struct CsvReader(Copyable, Representable, Sized, Stringable, Writable):
         else:
             # Also limit user-specified thread count to half the cores
             self.num_threads = num_threads
-
+            
         self._open(in_csv)
 
         self._create_threaded_reader()
@@ -80,7 +80,7 @@ struct CsvReader(Copyable, Representable, Sized, Stringable, Writable):
         if self.col_count > 0:
             self.headers = self.elements[0 : self.col_count]
 
-    fn _open(mut self, in_csv: Path) raises:
+    fn _open(mut self, in_csv: Path):
         try:
             assert_true(in_csv.exists())
             self.raw = in_csv.read_text()
@@ -89,9 +89,9 @@ struct CsvReader(Copyable, Representable, Sized, Stringable, Writable):
             self.raw_length = len(self.raw)
         except AssertionError:
             print("Error opening file:", in_csv)
-            raise AssertionError
+            # raise AssertionError
 
-    fn _create_threaded_reader(mut self) raises:
+    fn _create_threaded_reader(mut self):
         """Main entry point for threaded CSV parsing"""
         # For small files, use single-threaded approach
         if self.raw_length < 1000 or self.num_threads == 1:
@@ -353,15 +353,15 @@ struct CsvReader(Copyable, Representable, Sized, Stringable, Writable):
             self.row_count += chunk_result.row_count
 
     # Standard interface methods (same as original CsvReader)
-    fn __getitem__(self, index: Int) raises -> String:
+    fn __getitem__(read self, index: Int) raises -> String:
         if index < 0 or index >= self.length:
             raise Error("Index out of range")
         return self.elements[index]
 
-    fn __len__(self) -> Int:
+    fn __len__(read self) -> Int:
         return self.length
 
-    fn __repr__(self) -> String:
+    fn __repr__(read self) -> String:
         var out: String = "["
         for el in self.elements:
             out += "'"
@@ -370,10 +370,10 @@ struct CsvReader(Copyable, Representable, Sized, Stringable, Writable):
         out += "]"
         return out
 
-    fn __str__(self) -> String:
+    fn __str__(read self) -> String:
         return String.write(self)
 
-    fn write_to[W: Writer](self, mut writer: W) -> None:
+    fn write_to[W: Writer](read self, mut writer: W) -> None:
         writer.write(String("ThreadedCsvReader" + repr(self)))
 
     @parameter
@@ -386,9 +386,9 @@ struct CsvReader(Copyable, Representable, Sized, Stringable, Writable):
         return self.__next_ref__()
 
     @always_inline
-    fn __has_next__(self) -> Bool:
+    fn __has_next__(read self) -> Bool:
         return self.length > self.index
 
     @always_inline
-    fn __iter__(self) -> Self:
+    fn __iter__(read self) -> Self:
         return self
