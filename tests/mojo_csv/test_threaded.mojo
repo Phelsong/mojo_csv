@@ -1,7 +1,8 @@
 from pathlib import Path, cwd
-from mojo_csv import CsvReader
 from testing import assert_true
 from logger import Logger
+
+from mojo_csv import CsvReader
 
 
 fn test_correctness():

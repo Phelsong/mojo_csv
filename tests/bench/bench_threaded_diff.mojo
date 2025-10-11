@@ -1,6 +1,5 @@
 from pathlib import Path, cwd
 from sys import exit
-from testing import assert_true
 from time import time_function, perf_counter
 
 # from src import CsvReader
