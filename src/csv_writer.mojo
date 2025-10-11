@@ -23,7 +23,7 @@ struct CsvWriter(Copyable, Representable, Stringable, Writable):
         quotation_mark: String = '"',
         num_threads: Int = 0,
     ) raises:
-        self.elements = frame
+        self.elements = frame.copy()
         self.delimiter = delimiter
         self.QM = quotation_mark
         self.delimiter_byte = ord(self.delimiter)
@@ -66,7 +66,7 @@ struct CsvWriter(Copyable, Representable, Stringable, Writable):
         if needs_quotes:
             return self.QM + out + self.QM
         else:
-            return out
+            return out^
 
     # Write the flat element list to CSV file, given the number of columns per row.
     # The first row is elements[0:col_count], the second row is elements[col_count:2*col_count], etc.
@@ -128,14 +128,14 @@ struct CsvWriter(Copyable, Representable, Stringable, Writable):
                 output += "\n"
         out_csv.write_text(output)
 
-    fn __repr__(self) -> String:
+    fn __repr__(read self) -> String:
         return String("CsvWriter(len=" + String(self.length) + ")")
 
-    fn __str__(self) -> String:
+    fn __str__(read self) -> String:
         return String.write(self)
 
-    fn __len__(self) -> Int:
+    fn __len__(read self) -> Int:
         return self.length
 
-    fn write_to[W: Writer](self, mut writer: W) -> None:
+    fn write_to[W: Writer](read self, mut writer: W) -> None:
         writer.write(String("CsvWriter(" + String(self.length) + ")"))

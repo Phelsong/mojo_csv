@@ -16,9 +16,12 @@ struct ChunkResult(Copyable, Movable):
         self.row_count = 0
         self.col_count = 0
 
+    # fn __moveinit__(out self, deinit existing: Self):
+    # ...
+
 
 @fieldwise_init
-struct CsvReader(Copyable, Representable, Sized, Stringable, Writable):
+struct CsvReader(Copyable, Movable, Representable, Sized, Stringable, Writable):
     var raw: String
     var raw_bytes: List[Byte]
     var raw_length: Int
@@ -38,7 +41,7 @@ struct CsvReader(Copyable, Representable, Sized, Stringable, Writable):
 
     fn __init__(
         out self,
-        owned in_csv: Path,
+        var in_csv: Path,
         delimiter: String = ",",
         quotation_mark: String = '"',
         num_threads: Int = 0,
@@ -68,9 +71,8 @@ struct CsvReader(Copyable, Representable, Sized, Stringable, Writable):
             else:
                 self.num_threads = 1
         else:
-            # Also limit user-specified thread count to half the cores
             self.num_threads = num_threads
-            
+
         self._open(in_csv)
 
         self._create_threaded_reader()
@@ -78,7 +80,7 @@ struct CsvReader(Copyable, Representable, Sized, Stringable, Writable):
 
         # Set headers from first row
         if self.col_count > 0:
-            self.headers = self.elements[0 : self.col_count]
+            self.headers = self.elements[0 : self.col_count].copy()
 
     fn _open(mut self, in_csv: Path):
         try:
@@ -113,6 +115,7 @@ struct CsvReader(Copyable, Representable, Sized, Stringable, Writable):
         var chunk_results = List[ChunkResult]()
         for _ in range(len(chunks)):
             chunk_results.append(ChunkResult())
+        # var chunk_results = List[ChunkResult](capacity=len(chunks))
 
         @parameter
         fn process_chunk_parallel(chunk_idx: Int) -> None:
@@ -202,7 +205,7 @@ struct CsvReader(Copyable, Representable, Sized, Stringable, Writable):
                 self.elements.append(self.raw[col_start : pos + 1])
                 break
 
-    fn _find_split_points(self) -> List[Int]:
+    fn _find_split_points(mut self) -> List[Int]:
         """Find safe positions to split the file (newlines outside quotes)"""
         var split_points = List[Int]()
         split_points.append(0)  # Start of file
@@ -234,9 +237,11 @@ struct CsvReader(Copyable, Representable, Sized, Stringable, Writable):
                     skip = True
                 split_points.append(next_pos)
 
-        return split_points
+        return split_points^
 
-    fn _create_chunks(self, split_points: List[Int]) -> List[Tuple[Int, Int]]:
+    fn _create_chunks(
+        mut self, split_points: List[Int]
+    ) -> List[Tuple[Int, Int]]:
         """Create roughly equal chunks for parallel processing"""
         var chunks = List[Tuple[Int, Int]]()
         var num_splits = len(split_points) - 1
@@ -262,13 +267,15 @@ struct CsvReader(Copyable, Representable, Sized, Stringable, Writable):
                     end_split = num_splits
 
                 if start_split < end_split:
-                    chunks.append((split_points[start_split], split_points[end_split]))
+                    chunks.append(
+                        (split_points[start_split], split_points[end_split])
+                    )
 
                 current_split = end_split
-        return chunks
+        return chunks^
 
     fn _process_chunk(
-        self, start_pos: Int, end_pos: Int, is_first_chunk: Bool
+        mut self, start_pos: Int, end_pos: Int, is_first_chunk: Bool
     ) -> ChunkResult:
         """Process a single chunk of the CSV file"""
         var result = ChunkResult()
@@ -322,7 +329,8 @@ struct CsvReader(Copyable, Representable, Sized, Stringable, Writable):
 
             # handle carriage
             elif (
-                current_byte == self.carriage_return_byte and pos + 1 < self.raw_length
+                current_byte == self.carriage_return_byte
+                and pos + 1 < self.raw_length
             ):
                 result.elements.append(self.raw[col_start:pos])
 
@@ -338,9 +346,9 @@ struct CsvReader(Copyable, Representable, Sized, Stringable, Writable):
                 result.elements.append(self.raw[col_start : pos + 1])
                 break
 
-        return result
+        return result^
 
-    fn _merge_results(mut self, chunk_results: List[ChunkResult]):
+    fn _merge_results(mut self, ref chunk_results: List[ChunkResult]):
         """Merge results from all chunks"""
         # Get column count from first chunk
         if len(chunk_results) > 0:
@@ -353,7 +361,7 @@ struct CsvReader(Copyable, Representable, Sized, Stringable, Writable):
             self.row_count += chunk_result.row_count
 
     # Standard interface methods (same as original CsvReader)
-    fn __getitem__(read self, index: Int) raises -> String:
+    fn __getitem__(ref self, index: Int) raises -> String:
         if index < 0 or index >= self.length:
             raise Error("Index out of range")
         return self.elements[index]
@@ -368,7 +376,7 @@ struct CsvReader(Copyable, Representable, Sized, Stringable, Writable):
             out += String(el)
             out += "', "
         out += "]"
-        return out
+        return out^
 
     fn __str__(read self) -> String:
         return String.write(self)
@@ -390,5 +398,5 @@ struct CsvReader(Copyable, Representable, Sized, Stringable, Writable):
         return self.length > self.index
 
     @always_inline
-    fn __iter__(read self) -> Self:
-        return self
+    fn __iter__(var self) -> Self:
+        return self^

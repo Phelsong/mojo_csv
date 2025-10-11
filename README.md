@@ -118,6 +118,21 @@ average time in ms for large file:
 878.6 ms
 ```
 
+## Experimental
+Dict Reader and CsvWriter are in Beta
+
+=== DictCsvReader Performance ===
+-----------------------------------
+Small file benchmark (1,000 rows):
+Small Single-threaded: 0.6154 ms
+Small Threaded: 0.5044 ms
+-----------------------------------
+Medium file benchmark (100,000 rows):
+Medium: 42.04 ms
+-----------------------------------
+Large file benchmark (2,000,000 rows):
+Large: 1280.5 ms
+
 
 ## Future Improvements
 
