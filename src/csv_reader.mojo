@@ -47,7 +47,7 @@ struct CsvReader(Copyable, Movable, Representable, Sized, Stringable, Writable):
         num_threads: Int = 0,
     ):
         self.raw = ""
-        self.raw_bytes = List[](Byte())
+        self.raw_bytes = List[Byte]()
         self.raw_length = 0
         self.index = 0
         self.length = 0
@@ -80,7 +80,8 @@ struct CsvReader(Copyable, Movable, Representable, Sized, Stringable, Writable):
 
         # Set headers from first row
         if self.col_count > 0:
-            self.headers = self.elements[0 : self.col_count].copy()
+            var header_slice = self.elements[0 : self.col_count]
+            self.headers = List[String](header_slice)
 
     fn _open(mut self, in_csv: Path):
         try:
@@ -158,7 +159,7 @@ struct CsvReader(Copyable, Movable, Representable, Sized, Stringable, Writable):
             # --------
             # Delimiter
             if current_byte == self.delimiter_byte:
-                self.elements.append(self.raw[col_start:pos])
+                self.elements.append(String(self.raw[col_start:pos]))
                 col_start = pos + 1
 
                 if self.row_count == 0:
@@ -180,7 +181,7 @@ struct CsvReader(Copyable, Movable, Representable, Sized, Stringable, Writable):
             # --------
             # end of row no trailing delimiter
             elif current_byte == self.newline_byte:
-                self.elements.append(self.raw[col_start:pos])
+                self.elements.append(String(self.raw[col_start:pos]))
 
                 if self.row_count == 0:
                     self.col_count += 1
@@ -190,7 +191,7 @@ struct CsvReader(Copyable, Movable, Representable, Sized, Stringable, Writable):
                     col_start = pos + 1
 
             elif current_byte == self.carriage_return_byte:
-                self.elements.append(self.raw[col_start:pos])
+                self.elements.append(String(self.raw[col_start:pos]))
 
                 if self.row_count == 0:
                     self.col_count += 1
@@ -202,7 +203,7 @@ struct CsvReader(Copyable, Movable, Representable, Sized, Stringable, Writable):
                     skip = True  # Skip the \n in next iteration
 
             elif pos + 1 == self.raw_length:
-                self.elements.append(self.raw[col_start : pos + 1])
+                self.elements.append(String(self.raw[col_start : pos + 1]))
                 break
 
     fn _find_split_points(mut self) -> List[Int]:
@@ -239,9 +240,7 @@ struct CsvReader(Copyable, Movable, Representable, Sized, Stringable, Writable):
 
         return split_points^
 
-    fn _create_chunks(
-        mut self, split_points: List[Int]
-    ) -> List[Tuple[Int, Int]]:
+    fn _create_chunks(mut self, split_points: List[Int]) -> List[Tuple[Int, Int]]:
         """Create roughly equal chunks for parallel processing"""
         var chunks = List[Tuple[Int, Int]]()
         var num_splits = len(split_points) - 1
@@ -267,9 +266,7 @@ struct CsvReader(Copyable, Movable, Representable, Sized, Stringable, Writable):
                     end_split = num_splits
 
                 if start_split < end_split:
-                    chunks.append(
-                        (split_points[start_split], split_points[end_split])
-                    )
+                    chunks.append((split_points[start_split], split_points[end_split]))
 
                 current_split = end_split
         return chunks^
@@ -304,7 +301,7 @@ struct CsvReader(Copyable, Movable, Representable, Sized, Stringable, Writable):
                 continue
 
             if current_byte == self.delimiter_byte:
-                result.elements.append(self.raw[col_start:pos])
+                result.elements.append(String(self.raw[col_start:pos]))
                 col_start = pos + 1
 
                 if is_first_chunk and result.row_count == 0:
@@ -318,7 +315,7 @@ struct CsvReader(Copyable, Movable, Representable, Sized, Stringable, Writable):
 
             # handle newline
             elif current_byte == self.newline_byte:
-                result.elements.append(self.raw[col_start:pos])
+                result.elements.append(String(self.raw[col_start:pos]))
 
                 if is_first_chunk and result.row_count == 0:
                     result.col_count += 1
@@ -329,10 +326,9 @@ struct CsvReader(Copyable, Movable, Representable, Sized, Stringable, Writable):
 
             # handle carriage
             elif (
-                current_byte == self.carriage_return_byte
-                and pos + 1 < self.raw_length
+                current_byte == self.carriage_return_byte and pos + 1 < self.raw_length
             ):
-                result.elements.append(self.raw[col_start:pos])
+                result.elements.append(String(self.raw[col_start:pos]))
 
                 if result.row_count == 0:
                     result.col_count += 1
@@ -343,7 +339,7 @@ struct CsvReader(Copyable, Movable, Representable, Sized, Stringable, Writable):
                     skip = True
 
             elif pos + 1 == self.raw_length:
-                result.elements.append(self.raw[col_start : pos + 1])
+                result.elements.append(String(self.raw[col_start : pos + 1]))
                 break
 
         return result^
@@ -398,5 +394,5 @@ struct CsvReader(Copyable, Movable, Representable, Sized, Stringable, Writable):
         return self.length > self.index
 
     @always_inline
-    fn __iter__(var self) -> Self:
-        return self^
+    fn __iter__(ref self) -> Self:
+        return self.copy()

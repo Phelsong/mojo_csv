@@ -61,7 +61,7 @@ fn main():
     var time: Float64 = 0
     for _ in range(1000):
         var elapsed = time_function[bench_parse_micro]()
-        time += elapsed / 1000000
+        time += Float64(elapsed) / 1000000
     var avg: Float64 = time / 1000
     print("average time in ms for micro file:")
     print(round(avg, 4), "ms")
@@ -70,7 +70,7 @@ fn main():
     time = 0
     for _ in range(1000):
         elapsed = time_function[bench_parse_mini]()
-        time += elapsed / 1000000
+        time += Float64(elapsed) / 1000000
     avg = time / 1000
     print("average time in ms for mini file:")
     print(round(avg, 4), "ms")
@@ -79,7 +79,7 @@ fn main():
     time = 0
     for _ in range(1000):
         elapsed = time_function[bench_parse_small]()
-        time += elapsed / 1000000
+        time += Float64(elapsed) / 1000000
     avg = time / 1000
     print("average time in ms for small file:")
     print(round(avg, 3), "ms")
@@ -88,7 +88,7 @@ fn main():
     time = 0
     for _ in range(100):
         elapsed = time_function[bench_parse_medium]()
-        time += elapsed / 1000000
+        time += Float64(elapsed) / 1000000
     avg = time / 100
     print("average time in ms for medium file:")
     print(round(avg, 2), "ms")
@@ -97,7 +97,7 @@ fn main():
     time = 0
     for _ in range(20):
         elapsed = time_function[bench_parse_large]()
-        time += elapsed / 1000000
+        time += Float64(elapsed) / 1000000
     avg = time / 20
     print("average time in ms for large file:")
     print(round(avg, 1), "ms")

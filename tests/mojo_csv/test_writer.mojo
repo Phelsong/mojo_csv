@@ -6,17 +6,16 @@ from mojo_csv import CsvWriter, CsvReader
 
 fn test_csv_writer_basic() raises:
     # Prepare a small dataset: headers + 2 rows
-    var elements = List[String](
-        "Name",
-        "Note",
-        "val",
-        "fawn",
-        'He said "hi"',
-        "10",
-        '"already,quoted"',
-        "plain",
-        "word",
-    )
+    var elements = List[String]()
+    elements.append("Name")
+    elements.append("Note")
+    elements.append("val")
+    elements.append("fawn")
+    elements.append('He said "hi"')
+    elements.append("10")
+    elements.append('"already,quoted"')
+    elements.append("plain")
+    elements.append("word")
     var col_count = 3
 
     # Expected CSV text (no trailing newline)
@@ -45,17 +44,16 @@ fn test_csv_writer_basic() raises:
     # Read back and ensure we're compatible
     var reader = CsvReader(out_path, num_threads=1)
 
-    var expected_list = List[String](
-        "Name",
-        "Note",
-        "val",
-        "fawn",
-        '"He said ""hi"""',
-        "10",
-        '"already,quoted"',
-        "plain",
-        "word",
-    )
+    var expected_list = List[String]()
+    expected_list.append("Name")
+    expected_list.append("Note")
+    expected_list.append("val")
+    expected_list.append("fawn")
+    expected_list.append('"He said ""hi"""')
+    expected_list.append("10")
+    expected_list.append('"already,quoted"')
+    expected_list.append("plain")
+    expected_list.append("word")
 
     print("col: ", reader.col_count, " vs ", col_count)
     assert_true(reader.col_count == col_count)

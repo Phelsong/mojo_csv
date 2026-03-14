@@ -21,17 +21,16 @@ fn main():
 
 
 fn t_parse(read rd: CsvReader):
-    var VALID = List[String](
-        "item1",
-        "item2",
-        '"ite,em3"',
-        '"p""ic"',
-        " pi c",
-        "pic",
-        "r_i_1",
-        '"r_i_2"""',
-        "r_i_3",
-    )
+    var VALID = List[String]()
+    VALID.append("item1")
+    VALID.append("item2")
+    VALID.append('"ite,em3"')
+    VALID.append('"p""ic"')
+    VALID.append(" pi c")
+    VALID.append("pic")
+    VALID.append("r_i_1")
+    VALID.append('"r_i_2"""')
+    VALID.append("r_i_3")
     print("parsing:", rd)
     print("----------")
     try:

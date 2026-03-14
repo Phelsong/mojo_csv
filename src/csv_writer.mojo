@@ -45,24 +45,32 @@ struct CsvWriter(Copyable, Representable, Stringable, Writable):
     # - Otherwise, double embedded quotation marks and quote if it contains delimiter, quote, or newline
     fn _encode_cell(self, cell: String) -> String:
         var n = len(cell)
-        if n >= 2 and cell[0] == self.QM and cell[n - 1] == self.QM:
+        if n >= 2 and cell.startswith(self.QM) and cell.endswith(self.QM):
             # Treat as already CSV-encoded
             return cell
 
         var needs_quotes = False
         var out = String("")
 
-        for i in range(n):
-            var ch = cell[i]
-            if ch == self.QM:
+        quote_codepoint = ord(self.QM)
+        delimiter_codepoint = ord(self.delimiter)
+        newline_codepoint = ord("\n")
+        return_codepoint = ord("\r")
+
+        for ch in cell.codepoints():
+            if Int(ch) == quote_codepoint:
                 # Escape quotes by doubling
                 out += self.QM
                 out += self.QM
                 needs_quotes = True
             else:
-                if ch == self.delimiter or ch == "\n" or ch == "\r":
+                if (
+                    Int(ch) == delimiter_codepoint
+                    or Int(ch) == newline_codepoint
+                    or Int(ch) == return_codepoint
+                ):
                     needs_quotes = True
-                out += ch
+                out += String(ch)
         if needs_quotes:
             return self.QM + out + self.QM
         else:
