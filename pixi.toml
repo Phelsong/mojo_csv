@@ -4,7 +4,7 @@ channels = ["conda-forge", "https://conda.modular.com/max"]
 description = "csv parser in mojo"
 name = "mojo_csv"
 platforms = ["linux-64"]
-version = "1.6.0"
+version = "1.6.1"
 
 [tasks]
 test = "mojo tests/mojo_csv/test_threaded.mojo; mojo tests/mojo_csv/test_methods.mojo"
