@@ -1,6 +1,6 @@
-from pathlib import Path, cwd
-from testing import assert_true
-from logger import Logger
+from std.pathlib import Path, cwd
+from std.testing import assert_true
+from std.logger import Logger
 
 from mojo_csv import CsvReader
 

@@ -1,6 +1,6 @@
-from pathlib import Path, cwd
-from time import time_function
-from sys import exit
+from std.pathlib import Path, cwd
+from std.time import time_function
+from std.sys import exit
 
 from mojo_csv import DictCsvReader
 

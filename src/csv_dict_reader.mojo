@@ -1,12 +1,12 @@
-from collections import List
-from pathlib import Path
-from memory import Pointer, OwnedPointer, ArcPointer, UnsafePointer
+from std.collections import List
+from std.pathlib import Path
+from std.memory import Pointer, OwnedPointer, ArcPointer, UnsafePointer
 
 from .csv_reader import CsvReader
 
 
 @fieldwise_init
-struct CsvRow(Copyable, Movable, Representable, Stringable, Writable):
+struct CsvRow(Copyable, Movable, Writable):
     # var headers: UnsafePointer[
     #     mut=True, type = List[String], origin=MutableAnyOrigin
     # ]
@@ -76,7 +76,7 @@ struct CsvRow(Copyable, Movable, Representable, Stringable, Writable):
 
 
 @fieldwise_init
-struct DictCsvReader(Copyable, Movable, Representable, Sized, Stringable, Writable):
+struct DictCsvReader(Copyable, Movable, Sized, Writable):
     var reader: CsvReader
     var headers: List[String]
     var row_count: Int

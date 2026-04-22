@@ -1,6 +1,6 @@
-from pathlib import Path, cwd
-from sys import exit
-from time import time_function, perf_counter
+from std.pathlib import Path, cwd
+from std.sys import exit
+from std.time import time_function, perf_counter
 
 # from src import CsvReader
 

@@ -1,18 +1,18 @@
-from collections import List
-from pathlib import Path
-from sys import num_logical_cores
-from testing import assert_true
-from algorithm import parallelize
+from std.collections import List
+from std.pathlib import Path
+from std.sys import num_logical_cores
+from std.testing import assert_true
+from std.algorithm import parallelize
 
 
 @fieldwise_init
-struct CsvWriter(Copyable, Representable, Stringable, Writable):
+struct CsvWriter(Copyable, Writable):
     var elements: List[String]
     var delimiter: String
-    var delimiter_byte: Int
+    var delimiter_byte: UInt8
     var QM: String
-    var quote_byte: Int
-    var newline_byte: Int
+    var quote_byte: UInt8
+    var newline_byte: UInt8
     var num_threads: Int
     var length: Int
 
@@ -26,9 +26,9 @@ struct CsvWriter(Copyable, Representable, Stringable, Writable):
         self.elements = frame.copy()
         self.delimiter = delimiter
         self.QM = quotation_mark
-        self.delimiter_byte = ord(self.delimiter)
-        self.quote_byte = ord(self.QM)
-        self.newline_byte = ord("\n")
+        self.delimiter_byte = UInt8(ord(self.delimiter))
+        self.quote_byte = UInt8(ord(self.QM))
+        self.newline_byte = UInt8(ord("\n"))
         self.length = len(frame)
 
         if num_threads == 0:

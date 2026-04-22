@@ -1,5 +1,5 @@
-from pathlib import Path, cwd
-from testing import assert_true
+from std.pathlib import Path, cwd
+from std.testing import assert_true
 
 from mojo_csv import CsvReader, DictCsvReader
 

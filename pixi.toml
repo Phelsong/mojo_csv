@@ -1,4 +1,4 @@
-[project]
+[workspace]
 authors = ["Josh S Wilkinson <joshswilkinson@pm.me>"]
 channels = ["conda-forge", "https://conda.modular.com/max"]
 description = "csv parser in mojo"

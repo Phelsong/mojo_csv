@@ -1,6 +1,6 @@
-from pathlib import Path, cwd
-from sys import argv, exit
-from testing import assert_true
+from std.pathlib import Path, cwd
+from std.sys import argv, exit
+from std.testing import assert_true
 
 from mojo_csv import CsvReader
 

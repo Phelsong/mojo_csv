@@ -1,8 +1,8 @@
-from collections import List
-from pathlib import Path
-from sys import num_logical_cores
-from testing import assert_true
-from algorithm import parallelize
+from std.collections import List
+from std.pathlib import Path
+from std.sys import num_logical_cores
+from std.testing import assert_true
+from std.algorithm import parallelize
 
 
 @fieldwise_init
@@ -21,7 +21,7 @@ struct ChunkResult(Copyable, Movable):
 
 
 @fieldwise_init
-struct CsvReader(Copyable, Movable, Representable, Sized, Stringable, Writable):
+struct CsvReader(Copyable, Movable, Sized, Writable):
     var raw: String
     var raw_bytes: List[Byte]
     var raw_length: Int
@@ -31,11 +31,11 @@ struct CsvReader(Copyable, Movable, Representable, Sized, Stringable, Writable):
     var col_count: Int
     var elements: List[String]
     var delimiter: String
-    var delimiter_byte: Int
+    var delimiter_byte: UInt8
     var QM: String
-    var quote_byte: Int
-    var newline_byte: Int
-    var carriage_return_byte: Int
+    var quote_byte: UInt8
+    var newline_byte: UInt8
+    var carriage_return_byte: UInt8
     var headers: List[String]
     var num_threads: Int
 
@@ -58,10 +58,10 @@ struct CsvReader(Copyable, Movable, Representable, Sized, Stringable, Writable):
         self.delimiter = delimiter
         self.QM = quotation_mark
         # Get byte representation for efficient character comparison
-        self.delimiter_byte = ord(self.delimiter)
-        self.quote_byte = ord(self.QM)
-        self.newline_byte = ord("\n")
-        self.carriage_return_byte = ord("\r\n")
+        self.delimiter_byte = UInt8(ord(self.delimiter))
+        self.quote_byte = UInt8(ord(self.QM))
+        self.newline_byte = UInt8(ord("\n"))
+        self.carriage_return_byte = UInt8(ord("\r"))
 
         # Use all available cores if not specified
         if num_threads == 0:
@@ -159,7 +159,7 @@ struct CsvReader(Copyable, Movable, Representable, Sized, Stringable, Writable):
             # --------
             # Delimiter
             if current_byte == self.delimiter_byte:
-                self.elements.append(String(self.raw[col_start:pos]))
+                self.elements.append(String(self.raw[byte=col_start:pos]))
                 col_start = pos + 1
 
                 if self.row_count == 0:
@@ -181,7 +181,7 @@ struct CsvReader(Copyable, Movable, Representable, Sized, Stringable, Writable):
             # --------
             # end of row no trailing delimiter
             elif current_byte == self.newline_byte:
-                self.elements.append(String(self.raw[col_start:pos]))
+                self.elements.append(String(self.raw[byte=col_start:pos]))
 
                 if self.row_count == 0:
                     self.col_count += 1
@@ -191,7 +191,7 @@ struct CsvReader(Copyable, Movable, Representable, Sized, Stringable, Writable):
                     col_start = pos + 1
 
             elif current_byte == self.carriage_return_byte:
-                self.elements.append(String(self.raw[col_start:pos]))
+                self.elements.append(String(self.raw[byte=col_start:pos]))
 
                 if self.row_count == 0:
                     self.col_count += 1
@@ -199,11 +199,11 @@ struct CsvReader(Copyable, Movable, Representable, Sized, Stringable, Writable):
                 # Handle \r\n
                 if pos <= self.raw_length:
                     self.row_count += 1
-                    col_start = pos + 1
+                    col_start = pos + 2
                     skip = True  # Skip the \n in next iteration
 
             elif pos + 1 == self.raw_length:
-                self.elements.append(String(self.raw[col_start : pos + 1]))
+                self.elements.append(String(self.raw[byte=col_start : pos + 1]))
                 break
 
     fn _find_split_points(mut self) -> List[Int]:
@@ -301,7 +301,7 @@ struct CsvReader(Copyable, Movable, Representable, Sized, Stringable, Writable):
                 continue
 
             if current_byte == self.delimiter_byte:
-                result.elements.append(String(self.raw[col_start:pos]))
+                result.elements.append(String(self.raw[byte=col_start:pos]))
                 col_start = pos + 1
 
                 if is_first_chunk and result.row_count == 0:
@@ -315,7 +315,7 @@ struct CsvReader(Copyable, Movable, Representable, Sized, Stringable, Writable):
 
             # handle newline
             elif current_byte == self.newline_byte:
-                result.elements.append(String(self.raw[col_start:pos]))
+                result.elements.append(String(self.raw[byte=col_start:pos]))
 
                 if is_first_chunk and result.row_count == 0:
                     result.col_count += 1
@@ -328,7 +328,7 @@ struct CsvReader(Copyable, Movable, Representable, Sized, Stringable, Writable):
             elif (
                 current_byte == self.carriage_return_byte and pos + 1 < self.raw_length
             ):
-                result.elements.append(String(self.raw[col_start:pos]))
+                result.elements.append(String(self.raw[byte=col_start:pos]))
 
                 if result.row_count == 0:
                     result.col_count += 1
@@ -339,7 +339,7 @@ struct CsvReader(Copyable, Movable, Representable, Sized, Stringable, Writable):
                     skip = True
 
             elif pos + 1 == self.raw_length:
-                result.elements.append(String(self.raw[col_start : pos + 1]))
+                result.elements.append(String(self.raw[byte=col_start : pos + 1]))
                 break
 
         return result^
