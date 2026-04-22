@@ -1,3 +1,6 @@
+# test artifacts
+test_data_*.csv
+
 # pixi environments
 .pixi
 *.egg-info

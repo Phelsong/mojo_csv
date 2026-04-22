@@ -6,10 +6,10 @@ package:
 
 source:
   - git: https://github.com/Phelsong/mojo_csv.git
-    rev: 432f97142c221b05027029e35b3ebb32fd75822d
+    rev: 0ee9ea6f5511efbdf48c64c81fea834f23690579
 
 build:
-  number: 1
+  number: 9
   script:
     - mojo package src -o ${{ PREFIX }}/lib/mojo/mojo_csv.mojopkg
 
