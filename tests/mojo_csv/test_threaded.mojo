@@ -5,7 +5,7 @@ from std.logger import Logger
 from mojo_csv import CsvReader
 
 
-fn test_correctness():
+def test_correctness():
     """Test that threaded reader produces same results as single-threaded."""
     try:
         var in_csv = cwd().joinpath("tests/datablist/organizations-1000.csv")
@@ -75,5 +75,5 @@ fn test_correctness():
         print("Error in test")
 
 
-fn main():
+def main():
     test_correctness()

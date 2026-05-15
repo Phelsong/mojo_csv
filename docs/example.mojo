@@ -1,10 +1,10 @@
-from pathlib import Path, cwd
-from sys import num_logical_cores
+from std.pathlib import Path, cwd
+from std.sys import num_logical_cores
 
 from mojo_csv import CsvReader
 
 
-fn main():
+def main():
     """Example usage of ThreadedCsvReader."""
     print("=== Threaded CSV Reader Example ===")
     print("Available CPU cores:", num_logical_cores())
@@ -43,7 +43,7 @@ fn main():
 
 
 # Performance tips and usage guidelines
-fn usage_tips():
+def usage_tips():
     """Print usage tips for CsvReader."""
     print()
     print("=== CsvReader Usage Tips ===")

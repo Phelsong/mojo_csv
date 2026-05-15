@@ -4,7 +4,7 @@ from std.testing import assert_true
 from mojo_csv import CsvWriter, CsvReader
 
 
-fn test_csv_writer_basic() raises:
+def test_csv_writer_basic() raises:
     # Prepare a small dataset: headers + 2 rows
     var elements = List[String]()
     elements.append("Name")
@@ -75,7 +75,7 @@ fn test_csv_writer_basic() raises:
         )
 
 
-fn main():
+def main():
     try:
         test_csv_writer_basic()
         print("csv_writer test: success")

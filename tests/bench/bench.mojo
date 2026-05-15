@@ -6,7 +6,7 @@ from std.time import time_function, perf_counter
 from mojo_csv import CsvReader
 
 
-fn bench_parse_micro() capturing:
+def bench_parse_micro() capturing:
     try:
         var in_csv: Path = cwd().joinpath("tests/test.csv")
         _ = CsvReader(in_csv)
@@ -16,7 +16,7 @@ fn bench_parse_micro() capturing:
         exit()
 
 
-fn bench_parse_mini() capturing:
+def bench_parse_mini() capturing:
     try:
         var in_csv: Path = cwd().joinpath("tests/datablist/leads-100.csv")
         _ = CsvReader(in_csv)
@@ -26,7 +26,7 @@ fn bench_parse_mini() capturing:
         exit()
 
 
-fn bench_parse_small() capturing:
+def bench_parse_small() capturing:
     try:
         var in_csv: Path = cwd().joinpath("tests/datablist/organizations-1000.csv")
         _ = CsvReader(in_csv)
@@ -36,7 +36,7 @@ fn bench_parse_small() capturing:
         exit()
 
 
-fn bench_parse_medium() capturing:
+def bench_parse_medium() capturing:
     try:
         var in_csv: Path = cwd().joinpath("tests/datablist/people-100000.csv")
         var _ = CsvReader(in_csv)
@@ -45,7 +45,7 @@ fn bench_parse_medium() capturing:
         exit()
 
 
-fn bench_parse_large() capturing:
+def bench_parse_large() capturing:
     try:
         var in_csv: Path = cwd().joinpath("tests/datablist/products-2000000.csv")
         _ = CsvReader(in_csv)
@@ -54,13 +54,13 @@ fn bench_parse_large() capturing:
         exit()
 
 
-fn main():
+def main():
     # var start = perf_counter()
     # var end = perf_counter()
     print("running benchmark for micro csv:")
     var time: Float64 = 0
     for _ in range(1000):
-        var elapsed = time_function[bench_parse_micro]()
+        var elapsed = time_function[](bench_parse_micro)
         time += Float64(elapsed) / 1000000
     var avg: Float64 = time / 1000
     print("average time in ms for micro file:")
@@ -69,7 +69,7 @@ fn main():
     print("running benchmark for mini csv:")
     time = 0
     for _ in range(1000):
-        elapsed = time_function[bench_parse_mini]()
+        elapsed = time_function[](bench_parse_mini)
         time += Float64(elapsed) / 1000000
     avg = time / 1000
     print("average time in ms for mini file:")
@@ -78,7 +78,7 @@ fn main():
     print("running benchmark for small csv:")
     time = 0
     for _ in range(1000):
-        elapsed = time_function[bench_parse_small]()
+        elapsed = time_function[](bench_parse_small)
         time += Float64(elapsed) / 1000000
     avg = time / 1000
     print("average time in ms for small file:")
@@ -87,7 +87,7 @@ fn main():
     print("running benchmark for medium csv:")
     time = 0
     for _ in range(100):
-        elapsed = time_function[bench_parse_medium]()
+        elapsed = time_function[](bench_parse_medium)
         time += Float64(elapsed) / 1000000
     avg = time / 100
     print("average time in ms for medium file:")
@@ -96,7 +96,7 @@ fn main():
     print("running benchmark for large csv:")
     time = 0
     for _ in range(20):
-        elapsed = time_function[bench_parse_large]()
+        elapsed = time_function[](bench_parse_large)
         time += Float64(elapsed) / 1000000
     avg = time / 20
     print("average time in ms for large file:")

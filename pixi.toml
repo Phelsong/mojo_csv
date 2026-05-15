@@ -4,6 +4,7 @@ channels = ["conda-forge", "https://conda.modular.com/max"]
 description = "csv parser in mojo"
 name = "mojo_csv"
 platforms = ["linux-64", "linux-aarch64", "osx-arm64"]
+exclude-newer = "7d"
 version = "1.6.1"
 
 [tasks]
@@ -24,5 +25,5 @@ test-build = { cmd = "rattler-build build --channel https://prefix.dev/modular-c
 # --skip-extisting=all
 
 [dependencies]
-mojo = "0.26.*"
+mojo = ">=1.0.0b1,<2"
 #

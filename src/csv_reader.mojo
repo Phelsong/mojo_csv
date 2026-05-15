@@ -11,12 +11,12 @@ struct ChunkResult(Copyable, Movable):
     var row_count: Int
     var col_count: Int
 
-    fn __init__(out self):
+    def __init__(out self):
         self.elements = List[String]()
         self.row_count = 0
         self.col_count = 0
 
-    # fn __moveinit__(out self, deinit existing: Self):
+    # def __moveinit__(out self, deinit existing: Self):
     # ...
 
 
@@ -39,7 +39,7 @@ struct CsvReader(Copyable, Movable, Sized, Writable):
     var headers: List[String]
     var num_threads: Int
 
-    fn __init__(
+    def __init__(
         out self,
         var in_csv: Path,
         delimiter: String = ",",
@@ -83,18 +83,18 @@ struct CsvReader(Copyable, Movable, Sized, Writable):
             var header_slice = self.elements[0 : self.col_count]
             self.headers = List[String](header_slice)
 
-    fn _open(mut self, in_csv: Path):
+    def _open(mut self, in_csv: Path):
         try:
             assert_true(in_csv.exists())
             self.raw = in_csv.read_text()
             assert_true(self.raw != "")
             self.raw_bytes = in_csv.read_bytes()
-            self.raw_length = len(self.raw)
+            self.raw_length = self.raw.byte_length()
         except AssertionError:
             print("Error opening file:", in_csv)
             # raise AssertionError
 
-    fn _create_threaded_reader(mut self):
+    def _create_threaded_reader(mut self):
         """Main entry point for threaded CSV parsing"""
         # For small files, use single-threaded approach
         if self.raw_length < 1000 or self.num_threads == 1:
@@ -119,7 +119,7 @@ struct CsvReader(Copyable, Movable, Sized, Writable):
         # var chunk_results = List[ChunkResult](capacity=len(chunks))
 
         @parameter
-        fn process_chunk_parallel(chunk_idx: Int) -> None:
+        def process_chunk_parallel(chunk_idx: Int) -> None:
             var chunk = chunks[chunk_idx]
             chunk_results[chunk_idx] = self._process_chunk(
                 chunk[0], chunk[1], chunk_idx == 0
@@ -130,7 +130,7 @@ struct CsvReader(Copyable, Movable, Sized, Writable):
         # Merge results
         self._merge_results(chunk_results)
 
-    fn _create_single_threaded_reader(mut self):
+    def _create_single_threaded_reader(mut self):
         """Fallback to original single-threaded implementation"""
         var col_start: Int = 0
         var in_quotes: Bool = False
@@ -203,10 +203,10 @@ struct CsvReader(Copyable, Movable, Sized, Writable):
                     skip = True  # Skip the \n in next iteration
 
             elif pos + 1 == self.raw_length:
-                self.elements.append(String(self.raw[byte=col_start : pos + 1]))
+                self.elements.append(String(self.raw[byte = col_start : pos + 1]))
                 break
 
-    fn _find_split_points(mut self) -> List[Int]:
+    def _find_split_points(mut self) -> List[Int]:
         """Find safe positions to split the file (newlines outside quotes)"""
         var split_points = List[Int]()
         split_points.append(0)  # Start of file
@@ -240,7 +240,7 @@ struct CsvReader(Copyable, Movable, Sized, Writable):
 
         return split_points^
 
-    fn _create_chunks(mut self, split_points: List[Int]) -> List[Tuple[Int, Int]]:
+    def _create_chunks(mut self, split_points: List[Int]) -> List[Tuple[Int, Int]]:
         """Create roughly equal chunks for parallel processing"""
         var chunks = List[Tuple[Int, Int]]()
         var num_splits = len(split_points) - 1
@@ -271,7 +271,7 @@ struct CsvReader(Copyable, Movable, Sized, Writable):
                 current_split = end_split
         return chunks^
 
-    fn _process_chunk(
+    def _process_chunk(
         mut self, start_pos: Int, end_pos: Int, is_first_chunk: Bool
     ) -> ChunkResult:
         """Process a single chunk of the CSV file"""
@@ -339,12 +339,12 @@ struct CsvReader(Copyable, Movable, Sized, Writable):
                     skip = True
 
             elif pos + 1 == self.raw_length:
-                result.elements.append(String(self.raw[byte=col_start : pos + 1]))
+                result.elements.append(String(self.raw[byte = col_start : pos + 1]))
                 break
 
         return result^
 
-    fn _merge_results(mut self, ref chunk_results: List[ChunkResult]):
+    def _merge_results(mut self, ref chunk_results: List[ChunkResult]):
         """Merge results from all chunks"""
         # Get column count from first chunk
         if len(chunk_results) > 0:
@@ -357,15 +357,15 @@ struct CsvReader(Copyable, Movable, Sized, Writable):
             self.row_count += chunk_result.row_count
 
     # Standard interface methods (same as original CsvReader)
-    fn __getitem__(ref self, index: Int) raises -> String:
+    def __getitem__(ref self, index: Int) raises -> String:
         if index < 0 or index >= self.length:
             raise Error("Index out of range")
         return self.elements[index]
 
-    fn __len__(read self) -> Int:
+    def __len__(read self) -> Int:
         return self.length
 
-    fn __repr__(read self) -> String:
+    def __repr__(read self) -> String:
         var out: String = "["
         for el in self.elements:
             out += "'"
@@ -374,25 +374,25 @@ struct CsvReader(Copyable, Movable, Sized, Writable):
         out += "]"
         return out^
 
-    fn __str__(read self) -> String:
+    def __str__(read self) -> String:
         return String.write(self)
 
-    fn write_to[W: Writer](read self, mut writer: W) -> None:
+    def write_to[W: Writer](read self, mut writer: W) -> None:
         writer.write(String("ThreadedCsvReader" + repr(self)))
 
     @parameter
-    fn __next_ref__(mut self) -> String:
+    def __next_ref__(mut self) -> String:
         self.index += 1
         return self.elements[self.index - 1]
 
     @always_inline
-    fn __next__(mut self) -> String:
+    def __next__(mut self) -> String:
         return self.__next_ref__()
 
     @always_inline
-    fn __has_next__(read self) -> Bool:
+    def __has_next__(read self) -> Bool:
         return self.length > self.index
 
     @always_inline
-    fn __iter__(ref self) -> Self:
+    def __iter__(ref self) -> Self:
         return self.copy()

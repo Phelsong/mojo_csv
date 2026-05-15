@@ -4,7 +4,7 @@ from std.testing import assert_true
 from mojo_csv import CsvReader, DictCsvReader
 
 
-fn test_dict_reader_basic() raises:
+def test_dict_reader_basic() raises:
     var in_csv: Path = cwd().joinpath("tests/test.csv")
     var rd = CsvReader(in_csv)
     var dr = DictCsvReader(in_csv)

@@ -5,7 +5,7 @@ from std.testing import assert_true
 from src import CsvReader, DictCsvReader, CsvWriter
 
 
-fn main():
+def main():
     try:
         var in_csv: Path = cwd().joinpath("tests/test.csv")
         var rd = CsvReader(in_csv, num_threads=2)
@@ -20,7 +20,7 @@ fn main():
         print("invalid path")
 
 
-fn t_parse(read rd: CsvReader):
+def t_parse(read rd: CsvReader):
     var VALID = List[String]()
     VALID.append("item1")
     VALID.append("item2")
@@ -55,7 +55,7 @@ fn t_parse(read rd: CsvReader):
     print("parse successful")
 
 
-fn t_methods(read rd: CsvReader) raises:
+def t_methods(read rd: CsvReader) raises:
     try:
         print(String("repr: {}").format(repr(rd)))
         print(String("len: {}").format(len(rd)))
@@ -71,7 +71,7 @@ fn t_methods(read rd: CsvReader) raises:
         print("error in methods")
 
 
-fn t_dict_reader(read in_csv: Path):
+def t_dict_reader(read in_csv: Path):
     try:
         var dr = DictCsvReader(in_csv)
         print("DictCsvReader headers:")
@@ -90,7 +90,7 @@ fn t_dict_reader(read in_csv: Path):
         print("error in dict reader")
 
 
-fn t_csv_writer(read rd: CsvReader):
+def t_csv_writer(read rd: CsvReader):
     try:
         var writer = CsvWriter(rd.elements)
         var out_path = cwd().joinpath("tests/writer-dev.csv")

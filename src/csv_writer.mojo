@@ -16,7 +16,7 @@ struct CsvWriter(Copyable, Writable):
     var num_threads: Int
     var length: Int
 
-    fn __init__(
+    def __init__(
         out self,
         frame: List[String],
         delimiter: String = ",",
@@ -43,8 +43,8 @@ struct CsvWriter(Copyable, Writable):
     # Encode a single cell with CSV rules:
     # - If already quoted (starts/ends with quotation_mark), assume it's pre-encoded and return as-is
     # - Otherwise, double embedded quotation marks and quote if it contains delimiter, quote, or newline
-    fn _encode_cell(self, cell: String) -> String:
-        var n = len(cell)
+    def _encode_cell(self, cell: String) -> String:
+        var n = cell.byte_length()
         if n >= 2 and cell.startswith(self.QM) and cell.endswith(self.QM):
             # Treat as already CSV-encoded
             return cell
@@ -78,7 +78,7 @@ struct CsvWriter(Copyable, Writable):
 
     # Write the flat element list to CSV file, given the number of columns per row.
     # The first row is elements[0:col_count], the second row is elements[col_count:2*col_count], etc.
-    fn write(
+    def write(
         self, out_csv: Path, col_count: Int, include_trailing_newline: Bool = False
     ) raises:
         assert_true(col_count > 0, "col_count must be > 0")
@@ -116,7 +116,7 @@ struct CsvWriter(Copyable, Writable):
             rows.append(String(""))
 
         @parameter
-        fn process_row(row_idx: Int) -> None:
+        def process_row(row_idx: Int) -> None:
             var start = row_idx * col_count
             var end = start + col_count
             var row = String("")
@@ -136,14 +136,14 @@ struct CsvWriter(Copyable, Writable):
                 output += "\n"
         out_csv.write_text(output)
 
-    fn __repr__(read self) -> String:
+    def __repr__(read self) -> String:
         return String("CsvWriter(len=" + String(self.length) + ")")
 
-    fn __str__(read self) -> String:
+    def __str__(read self) -> String:
         return String.write(self)
 
-    fn __len__(read self) -> Int:
+    def __len__(read self) -> Int:
         return self.length
 
-    fn write_to[W: Writer](read self, mut writer: W) -> None:
+    def write_to[W: Writer](read self, mut writer: W) -> None:
         writer.write(String("CsvWriter(" + String(self.length) + ")"))

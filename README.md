@@ -37,7 +37,7 @@ from mojo_csv import CsvReader
 from pathlib import Path
 from sys import exit
 
-fn main() raises:
+def main() raises:
     var csv_path = Path("path/to/csv/file.csv")
     try:
         var reader = CsvReader(csv_path)

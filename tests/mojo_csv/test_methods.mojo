@@ -5,7 +5,7 @@ from std.testing import assert_true
 from mojo_csv import CsvReader
 
 
-fn test_methods() raises:
+def test_methods() raises:
     try:
         var in_csv: Path = cwd().joinpath("tests/test.csv")
         var rd = CsvReader(in_csv)
@@ -21,7 +21,7 @@ fn test_methods() raises:
         raise
 
 
-fn main():
+def main():
     try:
         test_methods()
         print("success")
