@@ -2,7 +2,7 @@ from std.collections import List
 from std.pathlib import Path
 from std.sys import num_logical_cores
 from std.testing import assert_true
-from std.algorithm import parallelize
+from max.algorithm import parallelize
 
 
 @fieldwise_init
@@ -65,7 +65,7 @@ struct CsvReader(Copyable, Movable, Sized, Writable):
 
         # Use all available cores if not specified
         if num_threads == 0:
-            cores = num_logical_cores()
+            var cores = num_logical_cores()
             if cores > 2:
                 self.num_threads = cores - 2
             else:
@@ -362,10 +362,10 @@ struct CsvReader(Copyable, Movable, Sized, Writable):
             raise Error("Index out of range")
         return self.elements[index]
 
-    def __len__(read self) -> Int:
+    def __len__(imm self) -> Int:
         return self.length
 
-    def __repr__(read self) -> String:
+    def __repr__(imm self) -> String:
         var out: String = "["
         for el in self.elements:
             out += "'"
@@ -374,10 +374,10 @@ struct CsvReader(Copyable, Movable, Sized, Writable):
         out += "]"
         return out^
 
-    def __str__(read self) -> String:
-        return String.write(self)
+    def __str__(imm self) -> String:
+        return String(self)
 
-    def write_to[W: Writer](read self, mut writer: W) -> None:
+    def write_to[W: Writer](imm self, mut writer: W) -> None:
         writer.write(String("ThreadedCsvReader" + repr(self)))
 
     @parameter
@@ -390,7 +390,7 @@ struct CsvReader(Copyable, Movable, Sized, Writable):
         return self.__next_ref__()
 
     @always_inline
-    def __has_next__(read self) -> Bool:
+    def __has_next__(imm self) -> Bool:
         return self.length > self.index
 
     @always_inline

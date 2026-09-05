@@ -2,7 +2,7 @@ from std.collections import List
 from std.pathlib import Path
 from std.sys import num_logical_cores
 from std.testing import assert_true
-from std.algorithm import parallelize
+from max.algorithm import parallelize
 
 
 @fieldwise_init
@@ -52,10 +52,10 @@ struct CsvWriter(Copyable, Writable):
         var needs_quotes = False
         var out = String("")
 
-        quote_codepoint = ord(self.QM)
-        delimiter_codepoint = ord(self.delimiter)
-        newline_codepoint = ord("\n")
-        return_codepoint = ord("\r")
+        var quote_codepoint = ord(self.QM)
+        var delimiter_codepoint = ord(self.delimiter)
+        var newline_codepoint = ord("\n")
+        var return_codepoint = ord("\r")
 
         for ch in cell.codepoints():
             if Int(ch) == quote_codepoint:
@@ -79,7 +79,10 @@ struct CsvWriter(Copyable, Writable):
     # Write the flat element list to CSV file, given the number of columns per row.
     # The first row is elements[0:col_count], the second row is elements[col_count:2*col_count], etc.
     def write(
-        self, out_csv: Path, col_count: Int, include_trailing_newline: Bool = False
+        self,
+        out_csv: Path,
+        col_count: Int,
+        include_trailing_newline: Bool = False,
     ) raises:
         assert_true(col_count > 0, "col_count must be > 0")
         assert_true(
@@ -136,14 +139,14 @@ struct CsvWriter(Copyable, Writable):
                 output += "\n"
         out_csv.write_text(output)
 
-    def __repr__(read self) -> String:
+    def __repr__(imm self) -> String:
         return String("CsvWriter(len=" + String(self.length) + ")")
 
-    def __str__(read self) -> String:
-        return String.write(self)
+    def __str__(imm self) -> String:
+        return String(self)
 
-    def __len__(read self) -> Int:
+    def __len__(imm self) -> Int:
         return self.length
 
-    def write_to[W: Writer](read self, mut writer: W) -> None:
+    def write_to[W: Writer](imm self, mut writer: W) -> None:
         writer.write(String("CsvWriter(" + String(self.length) + ")"))

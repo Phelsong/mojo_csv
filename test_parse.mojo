@@ -20,7 +20,7 @@ def main():
         print("invalid path")
 
 
-def t_parse(read rd: CsvReader):
+def t_parse(imm rd: CsvReader):
     var VALID = List[String]()
     VALID.append("item1")
     VALID.append("item2")
@@ -55,7 +55,7 @@ def t_parse(read rd: CsvReader):
     print("parse successful")
 
 
-def t_methods(read rd: CsvReader) raises:
+def t_methods(imm rd: CsvReader) raises:
     try:
         print(String("repr: {}").format(repr(rd)))
         print(String("len: {}").format(len(rd)))
@@ -71,7 +71,7 @@ def t_methods(read rd: CsvReader) raises:
         print("error in methods")
 
 
-def t_dict_reader(read in_csv: Path):
+def t_dict_reader(imm in_csv: Path):
     try:
         var dr = DictCsvReader(in_csv)
         print("DictCsvReader headers:")
@@ -90,7 +90,7 @@ def t_dict_reader(read in_csv: Path):
         print("error in dict reader")
 
 
-def t_csv_writer(read rd: CsvReader):
+def t_csv_writer(imm rd: CsvReader):
     try:
         var writer = CsvWriter(rd.elements)
         var out_path = cwd().joinpath("tests/writer-dev.csv")

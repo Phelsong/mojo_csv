@@ -2,7 +2,7 @@ from std.collections import List
 from std.pathlib import Path
 from std.memory import Pointer, OwnedPointer, ArcPointer, UnsafePointer
 
-from .csv_reader import CsvReader
+from src.csv_reader import CsvReader
 
 
 @fieldwise_init
@@ -25,7 +25,7 @@ struct CsvRow(Copyable, Movable, Writable):
         self.values = values.copy()
 
     @parameter
-    def col_count(read self) -> Int:
+    def col_count(imm self) -> Int:
         return len(self.headers)
 
     def get(self, key: String) raises -> String:
@@ -69,7 +69,7 @@ struct CsvRow(Copyable, Movable, Writable):
         return out
 
     def __str__(self) -> String:
-        return String.write(self)
+        return String(self)
 
     def write_to[W: Writer](self, mut writer: W) -> None:
         writer.write(String(repr(self)))
@@ -103,7 +103,7 @@ struct DictCsvReader(Copyable, Movable, Sized, Writable):
         self.index = 1  # start at first data row
 
     def _row_values(mut self, row: Int) raises -> List[String]:
-        values = List[String]()
+        var values = List[String]()
         if row <= 0 or row >= self.row_count:
             raise Error("Row index out of range")
         var base = row * self.col_count
@@ -120,11 +120,11 @@ struct DictCsvReader(Copyable, Movable, Sized, Writable):
             raise Error("Row index of of range")
 
     def __len__(
-        read self,
+        imm self,
     ) -> Int:
         return self.length
 
-    def __repr__(read self) -> String:
+    def __repr__(imm self) -> String:
         return String(
             "DictCsvReader(rows="
             + String(self.length)
@@ -133,10 +133,10 @@ struct DictCsvReader(Copyable, Movable, Sized, Writable):
             + ")"
         )
 
-    def __str__(read self) -> String:
-        return String.write(self)
+    def __str__(imm self) -> String:
+        return String(self)
 
-    def write_to[W: Writer](read self, mut writer: W) -> None:
+    def write_to[W: Writer](imm self, mut writer: W) -> None:
         writer.write(String(self.__repr__()))
 
     @parameter
@@ -151,7 +151,7 @@ struct DictCsvReader(Copyable, Movable, Sized, Writable):
         return self.__next_ref__()
 
     @always_inline
-    def __has_next__(read self) -> Bool:
+    def __has_next__(imm self) -> Bool:
         return self.index < self.row_count
 
     @always_inline
