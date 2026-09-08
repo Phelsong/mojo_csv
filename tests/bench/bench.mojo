@@ -28,7 +28,9 @@ def bench_parse_mini() capturing:
 
 def bench_parse_small() capturing:
     try:
-        var in_csv: Path = cwd().joinpath("tests/datablist/organizations-1000.csv")
+        var in_csv: Path = cwd().joinpath(
+            "tests/datablist/organizations-1000.csv"
+        )
         _ = CsvReader(in_csv)
     except:
         print("error in micro")
@@ -47,7 +49,9 @@ def bench_parse_medium() capturing:
 
 def bench_parse_large() capturing:
     try:
-        var in_csv: Path = cwd().joinpath("tests/datablist/products-2000000.csv")
+        var in_csv: Path = cwd().joinpath(
+            "tests/datablist/products-2000000.csv"
+        )
         _ = CsvReader(in_csv)
     except:
         print("error in large")
@@ -69,7 +73,7 @@ def main():
     print("running benchmark for mini csv:")
     time = 0
     for _ in range(1000):
-        elapsed = time_function[](bench_parse_mini)
+        var elapsed = time_function[](bench_parse_mini)
         time += Float64(elapsed) / 1000000
     avg = time / 1000
     print("average time in ms for mini file:")
@@ -78,7 +82,7 @@ def main():
     print("running benchmark for small csv:")
     time = 0
     for _ in range(1000):
-        elapsed = time_function[](bench_parse_small)
+        var elapsed = time_function[](bench_parse_small)
         time += Float64(elapsed) / 1000000
     avg = time / 1000
     print("average time in ms for small file:")
@@ -87,7 +91,7 @@ def main():
     print("running benchmark for medium csv:")
     time = 0
     for _ in range(100):
-        elapsed = time_function[](bench_parse_medium)
+        var elapsed = time_function[](bench_parse_medium)
         time += Float64(elapsed) / 1000000
     avg = time / 100
     print("average time in ms for medium file:")
@@ -96,7 +100,7 @@ def main():
     print("running benchmark for large csv:")
     time = 0
     for _ in range(20):
-        elapsed = time_function[](bench_parse_large)
+        var elapsed = time_function[](bench_parse_large)
         time += Float64(elapsed) / 1000000
     avg = time / 20
     print("average time in ms for large file:")
