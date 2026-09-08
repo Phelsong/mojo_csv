@@ -7,6 +7,7 @@
 # Mojo Csv
 
 Csv parsing library written in pure Mojo
+- Note: temporary dependent on Max for parrellelize
 
 ### usage
 
