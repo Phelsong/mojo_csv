@@ -14,3 +14,15 @@ output
 tests/datablist/products-2000000.csv
 kgen.trace.json.time-events.txt
 kgen.trace.json.time-trace
+
+# python bindings build artifacts
+python/*.so
+python/__pycache__
+# generated writer test outputs
+tests/writer-nl.csv
+tests/writer-match-single.csv
+tests/writer-match-threaded.csv
+tests/writer-roundtrip.csv
+tests/writer-delim.csv
+tests/writer-edge.csv
+tests/writer-test.csv

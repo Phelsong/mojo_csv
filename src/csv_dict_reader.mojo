@@ -2,35 +2,33 @@ from std.collections import List
 from std.pathlib import Path
 from std.memory import Pointer, OwnedPointer, ArcPointer, UnsafePointer
 
-from src.csv_reader import CsvReader
+from .csv_reader import CsvReader
 
 
-@fieldwise_init
 struct CsvRow(Copyable, Movable, Writable):
-    # var headers: UnsafePointer[
-    #     mut=True, type = List[String], origin=MutableAnyOrigin
-    # ]
-    # var headers: List[String]
-    var headers: List[String]
+    # Headers are shared across all rows of a DictCsvReader: the arc pointer
+    # makes row copies cheap (refcount bump) instead of deep-copying the list
+    var headers_ptr: ArcPointer[List[String]]
     var values: List[String]
 
-    # Overloaded constructor to initialize with headers and values
+    # Constructor initializing with shared headers and owned values
     def __init__(
         out self,
-        mut headers: List[String],
-        mut values: List[String],
+        headers_ptr: ArcPointer[List[String]],
+        var values: List[String],
     ):
-        # Convert to Pointers
-        self.headers = headers.copy()
-        self.values = values.copy()
+        self.headers_ptr = headers_ptr
+        self.values = values^
 
-    @parameter
+    def headers(imm self) -> List[String]:
+        return self.headers_ptr[].copy()
+
     def col_count(imm self) -> Int:
-        return len(self.headers)
+        return len(self.headers_ptr[])
 
     def get(self, key: String) raises -> String:
         var i: Int = 0
-        for h in self.headers:
+        for h in self.headers_ptr[]:
             if h == key:
                 if i < len(self.values):
                     return self.values[i]
@@ -44,41 +42,36 @@ struct CsvRow(Copyable, Movable, Writable):
             raise Error("Index out of range")
         return self.values[idx]
 
-    def keys(
-        mut self,
-    ) -> List[String]:
-        return self.headers.copy()
+    def keys(imm self) -> List[String]:
+        return self.headers_ptr[].copy()
 
-    def vals(mut self) -> List[String]:
+    def vals(imm self) -> List[String]:
         return self.values.copy()
 
-    def __repr__(self) -> String:
-        var out = String("{")
+    def write_repr_to[W: Writer](self, mut writer: W) -> None:
+        writer.write("{")
         var first = True
         var i: Int = 0
-        for h in self.headers:
+        for h in self.headers_ptr[]:
             if not first:
-                out += ", "
+                writer.write(", ")
             first = False
-            out += "'" + h + "': '"
+            writer.write("'", h, "': '")
             if i < len(self.values):
-                out += String(self.values[i])
-            out += "'"
+                writer.write(self.values[i])
+            writer.write("'")
             i += 1
-        out += "}"
-        return out
-
-    def __str__(self) -> String:
-        return String(self)
+        writer.write("}")
 
     def write_to[W: Writer](self, mut writer: W) -> None:
-        writer.write(String(repr(self)))
+        self.write_repr_to(writer)
 
 
 @fieldwise_init
 struct DictCsvReader(Copyable, Movable, Sized, Writable):
     var reader: CsvReader
     var headers: List[String]
+    var headers_ptr: ArcPointer[List[String]]
     var row_count: Int
     var col_count: Int
     var index: Int  # current row index in "row space" (1..row_count-1)
@@ -93,6 +86,7 @@ struct DictCsvReader(Copyable, Movable, Sized, Writable):
     ) raises:
         self.reader = CsvReader(in_csv, delimiter, quotation_mark, num_threads)
         self.headers = self.reader.headers.copy()
+        self.headers_ptr = ArcPointer(self.headers.copy())
         self.row_count = self.reader.row_count
         self.col_count = self.reader.col_count
         # self.rows =
@@ -103,19 +97,19 @@ struct DictCsvReader(Copyable, Movable, Sized, Writable):
         self.index = 1  # start at first data row
 
     def _row_values(mut self, row: Int) raises -> List[String]:
-        var values = List[String]()
         if row <= 0 or row >= self.row_count:
             raise Error("Row index out of range")
+        # Build the row's values directly from a slice of the flat element
+        # list instead of per-element indexed appends
         var base = row * self.col_count
-        for c in range(self.col_count):
-            var element_idx = base + c
-            if element_idx < len(self.reader):
-                values.append(self.reader[element_idx])
-        return values^
+        var end = base + self.col_count
+        if end > len(self.reader):
+            end = len(self.reader)
+        return List[String](self.reader.elements[base:end])
 
     def __getitem__(mut self, row: Int) raises -> CsvRow:
         try:
-            return CsvRow(self.headers.copy(), self._row_values(row))
+            return CsvRow(self.headers_ptr, self._row_values(row))
         except:
             raise Error("Row index of of range")
 
@@ -139,12 +133,11 @@ struct DictCsvReader(Copyable, Movable, Sized, Writable):
     def write_to[W: Writer](imm self, mut writer: W) -> None:
         writer.write(String(self.__repr__()))
 
-    @parameter
     def __next_ref__(mut self) raises -> CsvRow:
         if not self.__has_next__():
             raise Error("StopIteration")
         self.index += 1
-        return CsvRow(self.headers.copy(), self._row_values(self.index - 1))
+        return CsvRow(self.headers_ptr, self._row_values(self.index - 1))
 
     @always_inline
     def __next__(mut self) raises -> CsvRow:

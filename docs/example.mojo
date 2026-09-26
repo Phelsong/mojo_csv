@@ -33,7 +33,8 @@ def main():
             for col in range(reader.col_count):
                 var element_idx = row * reader.col_count + col
                 if element_idx < len(reader):
-                    print("  ", reader.headers[col], ":", reader[element_idx])
+                    var header = reader.headers[col]
+                    print("  ", header, ":", reader[element_idx])
             print()
 
         usage_tips()

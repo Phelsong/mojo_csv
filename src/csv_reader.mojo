@@ -1,4 +1,5 @@
 from std.collections import List
+from std.memory import ArcPointer
 from std.pathlib import Path
 from std.sys import num_logical_cores
 from std.testing import assert_true
@@ -20,10 +21,62 @@ struct ChunkResult(Copyable, Movable):
     # ...
 
 
-@fieldwise_init
+struct CellStore(Copyable, Movable):
+    # Immutable snapshot of the parsed cells shared with row views; the
+    # reader never mutates it after construction
+    var elements: List[String]
+    var col_count: Int
+
+    def __init__(out self, var elements: List[String], col_count: Int):
+        self.elements = elements^
+        self.col_count = col_count
+
+
+struct CsvRowView(Boolable, Copyable, Movable, Sized, Writable):
+    # A view of one row of a CsvReader: shares the cell store via a
+    # refcounted pointer so cell access reads the shared storage directly
+    var store_ptr: ArcPointer[CellStore]
+    var row: Int
+
+    def __init__(out self, store_ptr: ArcPointer[CellStore], row: Int):
+        self.store_ptr = store_ptr
+        self.row = row
+
+    def col_count(imm self) -> Int:
+        ref store = self.store_ptr[]
+        return store.col_count
+
+    def __getitem__(imm self, col: Int) raises -> String:
+        ref store = self.store_ptr[]
+        if col < 0 or col >= store.col_count:
+            raise Error("Column index out of range")
+        return store.elements[self.row * store.col_count + col]
+
+    def __len__(imm self) -> Int:
+        ref store = self.store_ptr[]
+        return store.col_count
+
+    def write_repr_to[W: Writer](imm self, mut writer: W) -> None:
+        ref store = self.store_ptr[]
+        writer.write("[")
+        var first = True
+        for c in range(store.col_count):
+            if not first:
+                writer.write(", ")
+            first = False
+            writer.write("'", store.elements[self.row * store.col_count + c], "'")
+        writer.write("]")
+
+    def write_to[W: Writer](imm self, mut writer: W) -> None:
+        self.write_repr_to(writer)
+
+    def __bool__(imm self) -> Bool:
+        ref store = self.store_ptr[]
+        return store.col_count > 0
+
+
 struct CsvReader(Copyable, Movable, Sized, Writable):
     var raw: String
-    var raw_bytes: List[Byte]
     var raw_length: Int
     var index: Int
     var length: Int
@@ -38,6 +91,7 @@ struct CsvReader(Copyable, Movable, Sized, Writable):
     var carriage_return_byte: UInt8
     var headers: List[String]
     var num_threads: Int
+    var store_ptr: ArcPointer[CellStore]
 
     def __init__(
         out self,
@@ -47,7 +101,6 @@ struct CsvReader(Copyable, Movable, Sized, Writable):
         num_threads: Int = 0,
     ):
         self.raw = ""
-        self.raw_bytes = List[Byte]()
         self.raw_length = 0
         self.index = 0
         self.length = 0
@@ -73,6 +126,9 @@ struct CsvReader(Copyable, Movable, Sized, Writable):
         else:
             self.num_threads = num_threads
 
+        # Shared cell store for row views (populated lazily by row())
+        self.store_ptr = ArcPointer(CellStore(List[String](), 0))
+
         self._open(in_csv)
 
         self._create_threaded_reader()
@@ -88,7 +144,6 @@ struct CsvReader(Copyable, Movable, Sized, Writable):
             assert_true(in_csv.exists())
             self.raw = in_csv.read_text()
             assert_true(self.raw != "")
-            self.raw_bytes = in_csv.read_bytes()
             self.raw_length = self.raw.byte_length()
         except AssertionError:
             print("Error opening file:", in_csv)
@@ -97,37 +152,95 @@ struct CsvReader(Copyable, Movable, Sized, Writable):
     def _create_threaded_reader(mut self):
         """Main entry point for threaded CSV parsing"""
         # For small files, use single-threaded approach
-        if self.raw_length < 1000 or self.num_threads == 1:
+        if self.raw_length < 500000 or self.num_threads == 1:
             self._create_single_threaded_reader()
             return
 
-        # Find safe split points (newlines outside quotes)
-        var split_points = self._find_split_points()
+        var raw_bytes = self.raw.as_bytes()
+        var num_threads = self.num_threads
+        if num_threads > num_logical_cores():
+            num_threads = num_logical_cores()
 
-        if len(split_points) < 2:
-            # Fallback to single-threaded if no safe splits found
-            self._create_single_threaded_reader()
-            return
+        # Pass 1 (parallel): compute quote parity at each chunk boundary so
+        # chunk starts are always outside quoted fields
+        var parities = List[Int]()
+        parities.reserve(num_threads)
+        for _ in range(num_threads):
+            parities.append(0)
 
-        # Create chunks for parallel processing
-        var chunks = self._create_chunks(split_points)
+        def scan_chunk(
+            chunk_idx: Int,
+        ) {mut parities, imm raw_bytes, imm self, imm num_threads} -> None:
+            var start = chunk_idx * self.raw_length // num_threads
+            var end = (chunk_idx + 1) * self.raw_length // num_threads
+            var in_quotes = False
+            for pos in range(start, end):
+                if raw_bytes[pos] == self.quote_byte:
+                    in_quotes = not in_quotes
+            parities[chunk_idx] = 1 if in_quotes else 0
 
-        # Process chunks in parallel
+        parallelize(scan_chunk, num_threads, num_threads)
+
+        # prefix parity: quote state before each chunk
+        var prefix = List[Int]()
+        prefix.reserve(num_threads)
+        var running = 0
+        for i in range(num_threads):
+            prefix.append(running)
+            running ^= parities[i]
+
+        # Pass 2 (parallel): each chunk finds its first safe split at/after
+        # its sample offset using the known entry quote state
+        var splits = List[Int]()
+        splits.reserve(num_threads + 1)
+        splits.append(0)
+        for _ in range(num_threads):
+            splits.append(-1)
+
+        def find_split(
+            chunk_idx: Int,
+        ) {mut splits, imm raw_bytes, imm prefix, imm self, imm num_threads} -> None:
+            var start = chunk_idx * self.raw_length // num_threads
+            var end = (chunk_idx + 1) * self.raw_length // num_threads
+            var in_quotes = prefix[chunk_idx] == 1
+            for pos in range(start, end):
+                var cb = raw_bytes[pos]
+                if cb == self.quote_byte:
+                    in_quotes = not in_quotes
+                    continue
+                if not in_quotes and (
+                    cb == self.newline_byte or cb == self.carriage_return_byte
+                ):
+                    var next_pos = pos + 1
+                    if next_pos < self.raw_length and (
+                        raw_bytes[next_pos] == self.newline_byte
+                        or raw_bytes[next_pos] == self.carriage_return_byte
+                    ):
+                        next_pos += 1
+                    splits[chunk_idx + 1] = next_pos
+                    break
+            if splits[chunk_idx + 1] < 0:
+                splits[chunk_idx + 1] = end
+
+        parallelize(find_split, num_threads, num_threads)
+        splits[num_threads] = self.raw_length
+
+        # Pass 3 (parallel): parse each chunk independently
         var chunk_results = List[ChunkResult]()
-        for _ in range(len(chunks)):
+        chunk_results.reserve(num_threads)
+        for _ in range(num_threads):
             chunk_results.append(ChunkResult())
-        # var chunk_results = List[ChunkResult](capacity=len(chunks))
 
-        @parameter
-        def process_chunk_parallel(chunk_idx: Int) -> None:
-            var chunk = chunks[chunk_idx]
-            chunk_results[chunk_idx] = self._process_chunk(
-                chunk[0], chunk[1], chunk_idx == 0
-            )
+        def process_chunk_parallel(
+            chunk_idx: Int,
+        ) {mut chunk_results, imm raw_bytes, imm splits, imm self} -> None:
+            var start = splits[chunk_idx]
+            var end = splits[chunk_idx + 1]
+            chunk_results[chunk_idx] = self._process_chunk(start, end, chunk_idx == 0)
 
-        parallelize[process_chunk_parallel](len(chunks), self.num_threads)
+        parallelize(process_chunk_parallel, num_threads, num_threads)
 
-        # Merge results
+        # Merge results, consuming chunk storage progressively
         self._merge_results(chunk_results)
 
     def _create_single_threaded_reader(mut self):
@@ -135,9 +248,10 @@ struct CsvReader(Copyable, Movable, Sized, Writable):
         var col_start: Int = 0
         var in_quotes: Bool = False
         var skip: Bool = False
+        var raw_bytes = self.raw.as_bytes()
 
         for pos in range(self.raw_length):
-            var current_byte: UInt8 = self.raw_bytes[pos]
+            var current_byte: UInt8 = raw_bytes[pos]
 
             # Handle bypasses/escapes
             if skip:
@@ -167,7 +281,7 @@ struct CsvReader(Copyable, Movable, Sized, Writable):
 
                 # handle trailing delimiter
                 if pos + 1 < self.raw_length:
-                    var next_byte = self.raw_bytes[pos + 1]
+                    var next_byte = raw_bytes[pos + 1]
                     if (
                         next_byte == self.newline_byte
                         or next_byte == self.carriage_return_byte
@@ -204,6 +318,7 @@ struct CsvReader(Copyable, Movable, Sized, Writable):
 
             elif pos + 1 == self.raw_length:
                 self.elements.append(String(self.raw[byte = col_start : pos + 1]))
+                self.row_count += 1
                 break
 
     def _find_split_points(mut self) -> List[Int]:
@@ -213,9 +328,10 @@ struct CsvReader(Copyable, Movable, Sized, Writable):
 
         var in_quotes = False
         var skip = False
+        var raw_bytes = self.raw.as_bytes()
 
         for pos in range(self.raw_length):
-            var char = self.raw_bytes[pos]
+            var char = raw_bytes[pos]
 
             if skip:
                 skip = False
@@ -231,8 +347,8 @@ struct CsvReader(Copyable, Movable, Sized, Writable):
                 # This is a safe split point
                 var next_pos = pos + 1
                 if next_pos < self.raw_length and (
-                    self.raw_bytes[next_pos] == self.newline_byte
-                    or self.raw_bytes[next_pos] == self.carriage_return_byte
+                    raw_bytes[next_pos] == self.newline_byte
+                    or raw_bytes[next_pos] == self.carriage_return_byte
                 ):
                     next_pos += 1
                     skip = True
@@ -272,16 +388,17 @@ struct CsvReader(Copyable, Movable, Sized, Writable):
         return chunks^
 
     def _process_chunk(
-        mut self, start_pos: Int, end_pos: Int, is_first_chunk: Bool
+        imm self, start_pos: Int, end_pos: Int, is_first_chunk: Bool
     ) -> ChunkResult:
         """Process a single chunk of the CSV file"""
         var result = ChunkResult()
         var col_start = start_pos
         var in_quotes = False
         var skip = False
+        var raw_bytes = self.raw.as_bytes()
 
         for pos in range(start_pos, end_pos):
-            var current_byte: UInt8 = self.raw_bytes[pos]
+            var current_byte: UInt8 = raw_bytes[pos]
 
             # Handle bypasses/escapes
             if skip:
@@ -308,7 +425,7 @@ struct CsvReader(Copyable, Movable, Sized, Writable):
                     result.col_count += 1
 
                 if pos + 1 < end_pos:
-                    if self.raw_bytes[pos + 1] == self.newline_byte:
+                    if raw_bytes[pos + 1] == self.newline_byte:
                         skip = True
                         col_start = pos + 2
                         result.row_count += 1
@@ -340,18 +457,27 @@ struct CsvReader(Copyable, Movable, Sized, Writable):
 
             elif pos + 1 == self.raw_length:
                 result.elements.append(String(self.raw[byte = col_start : pos + 1]))
+                result.row_count += 1
                 break
 
         return result^
 
-    def _merge_results(mut self, ref chunk_results: List[ChunkResult]):
-        """Merge results from all chunks"""
+    def _merge_results(mut self, mut chunk_results: List[ChunkResult]):
+        """Merge results from all chunks, consuming the chunk storage"""
         # Get column count from first chunk
         if len(chunk_results) > 0:
             self.col_count = chunk_results[0].col_count
 
-        # Merge all elements and count rows
+        # Pre-reserve to avoid repeated reallocation during merge
+        var total_elements: Int = 0
         for chunk_result in chunk_results:
+            total_elements += len(chunk_result.elements)
+        self.elements.reserve(total_elements)
+
+        # Merge all elements and count rows; pop chunks to keep order and
+        # release each chunk's storage as it is consumed
+        while len(chunk_results) > 0:
+            var chunk_result = chunk_results.pop(0)
             for element in chunk_result.elements:
                 self.elements.append(element)
             self.row_count += chunk_result.row_count
@@ -362,36 +488,54 @@ struct CsvReader(Copyable, Movable, Sized, Writable):
             raise Error("Index out of range")
         return self.elements[index]
 
+    def __getitem__(imm self, row: Int, col: Int) raises -> String:
+        if row < 0 or row >= self.row_count:
+            raise Error("Row index out of range")
+        if col < 0 or col >= self.col_count:
+            raise Error("Column index out of range")
+        return self.elements[row * self.col_count + col]
+
+    def row(mut self, index: Int) raises -> CsvRowView:
+        if index < 0 or index >= self.row_count:
+            raise Error("Row index out of range")
+        ref store = self.store_ptr[]
+        if store.col_count == 0 and len(self.elements) > 0:
+            self.store_ptr = ArcPointer(CellStore(self.elements.copy(), self.col_count))
+        return CsvRowView(self.store_ptr, index)
+
     def __len__(imm self) -> Int:
         return self.length
 
-    def __repr__(imm self) -> String:
-        var out: String = "["
+    def write_repr_to[W: Writer](imm self, mut writer: W) -> None:
+        writer.write("CsvReader[")
+        var first = True
         for el in self.elements:
-            out += "'"
-            out += String(el)
-            out += "', "
-        out += "]"
-        return out^
-
-    def __str__(imm self) -> String:
-        return String(self)
+            if not first:
+                writer.write(", ")
+            first = False
+            writer.write("'", el, "'")
+        writer.write("]")
 
     def write_to[W: Writer](imm self, mut writer: W) -> None:
-        writer.write(String("ThreadedCsvReader" + repr(self)))
+        writer.write("ThreadedCsvReader")
+        self.write_repr_to(writer)
 
-    @parameter
-    def __next_ref__(mut self) -> String:
+    def __next_ref__(mut self) raises -> CsvRowView:
+        if self.index >= self.row_count:
+            raise Error("StopIteration")
         self.index += 1
-        return self.elements[self.index - 1]
+        ref store = self.store_ptr[]
+        if store.col_count == 0 and self.length > 0:
+            self.store_ptr = ArcPointer(CellStore(self.elements.copy(), self.col_count))
+        return CsvRowView(self.store_ptr, self.index - 1)
 
     @always_inline
-    def __next__(mut self) -> String:
+    def __next__(mut self) raises -> CsvRowView:
         return self.__next_ref__()
 
     @always_inline
     def __has_next__(imm self) -> Bool:
-        return self.length > self.index
+        return self.row_count > self.index
 
     @always_inline
     def __iter__(ref self) -> Self:
