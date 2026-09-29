@@ -1,7 +1,6 @@
 from std.collections import List
 from std.pathlib import Path
 from std.sys import num_logical_cores
-from std.testing import assert_true
 from max.algorithm import parallelize
 
 
@@ -95,11 +94,15 @@ struct CsvWriter(Copyable, Writable):
         col_count: Int,
         include_trailing_newline: Bool = False,
     ) raises:
-        assert_true(col_count > 0, "col_count must be > 0")
-        assert_true(
-            (self.length % col_count) == 0,
-            "elements length must be divisible by col_count",
-        )
+        if col_count <= 0:
+            raise Error("col_count must be positive, got ", col_count)
+        if (self.length % col_count) != 0:
+            raise Error(
+                "elements length ",
+                self.length,
+                " is not divisible by col_count ",
+                col_count,
+            )
         var row_count: Int = 0
         if col_count > 0:
             row_count = self.length // col_count

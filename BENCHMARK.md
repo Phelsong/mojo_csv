@@ -18,15 +18,15 @@ average time in ms for micro file:
 -------------------------
 running benchmark for mini csv:
 average time in ms for mini file:
-0.0753 ms
+0.0359 ms
 -------------------------
 running benchmark for small csv:
 average time in ms for small file:
-0.441 ms
+0.187 ms
 -------------------------
 running benchmark for medium csv:
 average time in ms for medium file:
-15.16 ms
+14.33 ms
 -------------------------
 running benchmark for large csv:
 average time in ms for large file:

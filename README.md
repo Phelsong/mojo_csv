@@ -33,6 +33,20 @@ By default uses all logical cores - 2
  )
 ```
 
+A reader can also be built from already-split cells -- a flat row-major
+list, the same shape `CsvWriter` writes from. No scan runs; `col_count`
+fixes the row layout, and `has_header` (default True) controls whether the
+first row is treated as headers.
+
+```mojo
+from mojo_csv import CsvReader
+
+def main() raises:
+    var cells: List[String] = ["name", "note", "Ada", "first"]
+    var reader = CsvReader(cells, col_count=2)
+    print(reader.row_count, reader.col_count) # 2 2
+```
+
 ```mojo
 from mojo_csv import CsvReader
 from std.pathlib import Path
@@ -235,7 +249,7 @@ pixi run pack              # precompile src into dist/mojo_csv.mojoc
 - [x] CsvWriter
 - [x] CsvDictReader
 - [x] Python bindings
-- [ ] SIMD optimization within each thread
+- [x] SIMD optimization within each thread
 - [ ] Async Chunking (waiting for language support)
 - [ ] Streaming support for very large files
 - [ ] Memory pool for reduced allocations

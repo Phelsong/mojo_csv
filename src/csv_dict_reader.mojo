@@ -1,6 +1,6 @@
 from std.collections import List
 from std.pathlib import Path
-from std.memory import Pointer, OwnedPointer, ArcPointer, UnsafePointer
+from std.memory import ArcPointer
 
 from .csv_reader import CsvReader
 
@@ -108,10 +108,7 @@ struct DictCsvReader(Copyable, Movable, Sized, Writable):
         return List[String](self.reader.elements[base:end])
 
     def __getitem__(mut self, row: Int) raises -> CsvRow:
-        try:
-            return CsvRow(self.headers_ptr, self._row_values(row))
-        except:
-            raise Error("Row index of of range")
+        return CsvRow(self.headers_ptr, self._row_values(row))
 
     def __len__(
         imm self,

@@ -9,7 +9,7 @@ version = "1.7.0"
 
 [tasks]
 # tests
-test = "mojo run -I dist tests/mojo_csv/test_threaded.mojo; mojo run -I dist tests/mojo_csv/test_methods.mojo; mojo run -I dist tests/mojo_csv/test_2d.mojo; mojo run -I dist tests/mojo_csv/test_parser_edge.mojo"
+test = "mojo run -I dist tests/mojo_csv/test_threaded.mojo; mojo run -I dist tests/mojo_csv/test_methods.mojo; mojo run -I dist tests/mojo_csv/test_2d.mojo; mojo run -I dist tests/mojo_csv/test_parser_edge.mojo; mojo run -I dist tests/mojo_csv/test_in_memory.mojo"
 test-dict = "mojo run -I dist tests/mojo_csv/test_dict_reader.mojo"
 test-writer = "mojo run -I dist tests/mojo_csv/test_writer.mojo"
 test-dev = "mojo run -I . test_parse.mojo"
