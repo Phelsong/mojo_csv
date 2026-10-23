@@ -27,7 +27,7 @@ def test_cells_basic() raises:
 
 
 def test_cells_no_header() raises:
-    """has_header=False counts every row as data."""
+    """V has_header=False counts every row as data."""
     var cells: List[String] = ["a", "b", "c", "d"]
     var rd = CsvReader(cells^, col_count=2, has_header=False)
     assert_true(rd.row_count == 2, "no-header rows")
@@ -41,11 +41,11 @@ def test_cells_rejects_bad_shape() raises:
     var raised = 0
     # Each attempt gets its own copy: the constructor takes the list.
     try:
-        var _ = CsvReader(List[String](["a", "b", "c"])^, col_count=2)
+        var _ = CsvReader(List[String](["a", "b", "c"]), col_count=2)
     except:
         raised += 1
     try:
-        var _ = CsvReader(List[String](["a", "b", "c"])^, col_count=0)
+        var _ = CsvReader(List[String](["a", "b", "c"]), col_count=0)
     except:
         raised += 1
     var empty = List[String]()

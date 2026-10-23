@@ -4,7 +4,7 @@ channels = ["conda-forge", "https://conda.modular.com/max"]
 description = "csv parser in mojo"
 name = "mojo_csv"
 platforms = ["linux-64", "linux-aarch64", "osx-arm64"]
-exclude-newer = "7d"
+exclude-newer = "1d"
 version = "1.7.0"
 
 [tasks]
@@ -30,12 +30,18 @@ test-build = { cmd = "rattler-build build --channel https://prefix.dev/modular-c
 #
 # python bindings
 build-python-bindings = "mojo build python/mojo_csv_bind.mojo -I dist --emit shared-lib -o python/mojo_csv_bind.so"
-test-python = { cmd = "python python/test_mojo_csv_bind.py", depends-on = ["build-python-bindings"] }
-example-python = { cmd = "python python/example.py", depends-on = ["build-python-bindings"] }
-bench-python = { cmd = "python python/bench_vs_python.py", depends-on = ["build-python-bindings"] }
+test-python = { cmd = "python python/test_mojo_csv_bind.py", depends-on = [
+  "build-python-bindings",
+] }
+example-python = { cmd = "python python/example.py", depends-on = [
+  "build-python-bindings",
+] }
+bench-python = { cmd = "python python/bench_vs_python.py", depends-on = [
+  "build-python-bindings",
+] }
 # --skip-extisting=all
 
 [dependencies]
-mojo = ">=1.1.0,<1.1.9"
+mojo = ">=1.2.0,<1.2.9"
 max = ">=26.3.0,<27"
 #

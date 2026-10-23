@@ -26,3 +26,4 @@ tests/writer-roundtrip.csv
 tests/writer-delim.csv
 tests/writer-edge.csv
 tests/writer-test.csv
+tests/cells-roundtrip.csv

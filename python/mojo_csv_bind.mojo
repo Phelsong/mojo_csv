@@ -69,7 +69,7 @@ def write_csv(
     var elements = List[String]()
     for cell_obj in cells:
         elements.append(String(py=cell_obj))
-    var writer = CsvWriter(elements^)
+    var writer = CsvWriter(elements)
     writer.write(Path(String(py=out_path)), Int(py=col_count))
     return PythonObject(len(elements) // Int(py=col_count))
 
@@ -78,7 +78,7 @@ struct BoundReader(Copyable, Movable, Writable):
     # Parses once at construction; row/cell access reuses the parsed grid
     var reader: CsvReader
 
-    def __init__(out self, path: Path):
+    def __init__(out self, path: Path) raises:
         self.reader = CsvReader(path)
 
     @staticmethod
@@ -88,7 +88,7 @@ struct BoundReader(Copyable, Movable, Writable):
         else:
             self = BoundReader(Path(String(py=args[0])))
 
-    def __init__(out self, path: Path, num_threads: Int):
+    def __init__(out self, path: Path, num_threads: Int) raises:
         self.reader = CsvReader(path, num_threads=num_threads)
 
     @staticmethod
